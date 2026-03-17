@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { supabaseAdmin } from "@/lib/supabaseAdmin"
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
 
 export async function POST(req: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const body = await req.json()
     const { nome, email, username, tipo, ativo, imobiliaria_id, senha } = body
 
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(usuario, { status: 201 })
   } catch (err) {
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      { error: err instanceof Error ? err.message : "Erro interno do servidor" },
       { status: 500 }
     )
   }

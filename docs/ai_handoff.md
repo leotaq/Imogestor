@@ -89,6 +89,14 @@ Data de referencia: 2026-03-17
 
 ## Concluido recentemente
 
+## [Codex] 2026-03-17 21:40 - corrigir build do Vercel sem env do Supabase admin
+- Status: concluido
+- Objetivo: evitar falha prematura no build causada pela inicializacao do Supabase Admin e mapear as variaveis obrigatorias para deploy no Vercel
+- Arquivos: `docs/ai_handoff.md`, `.env.example`, `src/lib/supabaseAdmin.ts`, `src/app/api/usuarios/route.ts`, `src/app/api/usuarios/reset-senha/route.ts`
+- Validacao: `npm run build` concluido com sucesso com `.env.local`; build sem `.env.local` reproduziu falta de `NEXT_PUBLIC_SUPABASE_URL` nas paginas e confirmou dependencia das envs do Supabase no Vercel
+- Proximos passos: cadastrar no Vercel `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`, depois redeployar
+- Observacoes: as rotas de API com admin nao quebram mais so por serem importadas no build; o erro seguinte vem da ausencia das envs publicas usadas nas paginas e services
+
 ## [Codex] 2026-03-17 21:20 - publicar estado atual no git
 - Status: concluido
 - Objetivo: revisar o estado atual do repositorio, validar a compilacao e publicar as alteracoes no GitHub
