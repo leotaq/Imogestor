@@ -12,9 +12,19 @@ import {
   Play,
   DollarSign,
   BarChart3,
+  UserCog,
+  type LucideIcon,
 } from "lucide-react"
+import { useUsuario } from "@/lib/useUsuario"
+import { rotasDoUsuario } from "@/lib/permissions"
 
-const menuItems = [
+interface MenuItemDef {
+  label: string
+  href: string
+  icon: LucideIcon
+}
+
+const todosMenuItems: MenuItemDef[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Imóveis", href: "/imoveis", icon: Building2 },
   { label: "Vistorias", href: "/vistorias", icon: ClipboardCheck },
@@ -24,10 +34,17 @@ const menuItems = [
   { label: "Execução", href: "/execucao", icon: Play },
   { label: "Financeiro", href: "/financeiro", icon: DollarSign },
   { label: "Relatórios", href: "/relatorios", icon: BarChart3 },
+  { label: "Usuários", href: "/usuarios", icon: UserCog },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { tipo } = useUsuario()
+
+  const rotasPermitidas = tipo ? rotasDoUsuario(tipo) : []
+  const menuItems = todosMenuItems.filter((item) =>
+    rotasPermitidas.includes(item.href)
+  )
 
   return (
     <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col">

@@ -1,1 +1,1 @@
-export type { Vistoria } from "./database.types"
+export type { Inspection, InspectionType, InspectionStatus } from "./database.types"

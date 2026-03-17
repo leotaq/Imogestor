@@ -12,6 +12,7 @@ interface OrcamentoFormProps {
 export default function OrcamentoForm({ onSubmit }: OrcamentoFormProps) {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
+    imobiliaria_id: "",
     solicitacao_id: "",
     prestador_id: "",
     valor: 0,

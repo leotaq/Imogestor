@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
+import { useUsuario } from "@/lib/useUsuario"
 import { ClipboardCheck, Wrench, CheckCircle, DollarSign, TrendingUp } from "lucide-react"
 
 interface DashboardStats {
@@ -13,6 +14,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const { imobiliariaId, loading: loadingUser } = useUsuario()
   const [stats, setStats] = useState<DashboardStats>({
     abertas: 0,
     emExecucao: 0,
@@ -22,14 +24,18 @@ export default function DashboardPage() {
   })
 
   useEffect(() => {
+    if (!imobiliariaId) return
+
     async function carregarDados() {
       const { data: manutencoes } = await supabase
         .from("solicitacoes_manutencao")
         .select("status")
+        .eq("imobiliaria_id", imobiliariaId)
 
       const { data: financeiro } = await supabase
         .from("financeiro")
         .select("valor_total, taxa_administrativa")
+        .eq("imobiliaria_id", imobiliariaId)
 
       const abertas = manutencoes?.filter((m) => m.status === "aberta").length ?? 0
       const emExecucao = manutencoes?.filter((m) => m.status === "em_execucao").length ?? 0
@@ -42,7 +48,9 @@ export default function DashboardPage() {
     }
 
     carregarDados()
-  }, [])
+  }, [imobiliariaId])
+
+  if (loadingUser) return <p className="text-gray-500">Carregando...</p>
 
   const cards = [
     { label: "Solicitações Abertas", value: stats.abertas, icon: ClipboardCheck, color: "text-yellow-600 bg-yellow-50" },

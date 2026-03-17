@@ -19,7 +19,7 @@ export default function EditarImovelPage() {
     carregar()
   }, [params.id])
 
-  async function handleSubmit(dados: Omit<Imovel, "id">) {
+  async function handleSubmit(dados: Omit<Imovel, "id" | "created_at">) {
     await atualizarImovel(params.id as string, dados)
     router.push("/imoveis")
   }
@@ -27,8 +27,14 @@ export default function EditarImovelPage() {
   if (!imovel) return <p className="text-gray-500">Carregando...</p>
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Editar Imóvel</h1>
+    <div className="space-y-6">
+      <div className="max-w-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Editar imovel</h1>
+        <p className="mt-2 text-sm text-gray-500">
+          Atualize as informacoes do cadastro para manter endereco e contato sempre corretos.
+        </p>
+      </div>
+
       <ImovelForm onSubmit={handleSubmit} initialData={imovel} />
     </div>
   )

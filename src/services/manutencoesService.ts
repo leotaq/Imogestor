@@ -1,17 +1,18 @@
 import { supabase } from "@/lib/supabaseClient"
 import { SolicitacaoManutencao } from "@/types/database.types"
 
-export async function listarManutencoes() {
+export async function listarManutencoes(imobiliaria_id: string) {
   const { data, error } = await supabase
     .from("solicitacoes_manutencao")
     .select("*")
+    .eq("imobiliaria_id", imobiliaria_id)
 
   if (error) throw error
   return data as SolicitacaoManutencao[]
 }
 
 export async function criarManutencao(
-  manutencao: Omit<SolicitacaoManutencao, "id">
+  manutencao: Omit<SolicitacaoManutencao, "id" | "created_at">
 ) {
   const { data, error } = await supabase
     .from("solicitacoes_manutencao")

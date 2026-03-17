@@ -22,7 +22,7 @@ export async function buscarImovel(id: string) {
   return data as Imovel
 }
 
-export async function criarImovel(imovel: Omit<Imovel, "id">) {
+export async function criarImovel(imovel: Omit<Imovel, "id" | "created_at">) {
   const { data, error } = await supabase
     .from("imoveis")
     .insert(imovel)

@@ -7,12 +7,13 @@ import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
 
 interface ManutencaoFormProps {
-  onSubmit: (dados: Omit<SolicitacaoManutencao, "id">) => Promise<void>
+  onSubmit: (dados: Omit<SolicitacaoManutencao, "id" | "created_at">) => Promise<void>
 }
 
 export default function ManutencaoForm({ onSubmit }: ManutencaoFormProps) {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
+    imobiliaria_id: "",
     imovel_id: "",
     solicitante_tipo: "",
     nome_solicitante: "",

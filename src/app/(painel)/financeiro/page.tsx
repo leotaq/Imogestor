@@ -1,24 +1,32 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useUsuario } from "@/lib/useUsuario"
 import { listarFinanceiro } from "@/services/financeiroService"
 import { Financeiro } from "@/types/database.types"
 import Table from "@/components/ui/Table"
 
 export default function FinanceiroPage() {
+  const { imobiliariaId, loading: loadingUser } = useUsuario()
   const [registros, setRegistros] = useState<Financeiro[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!imobiliariaId) return
     async function carregar() {
       try {
-        const data = await listarFinanceiro("")
+        const data = await listarFinanceiro(imobiliariaId!)
         setRegistros(data)
       } catch (err) {
         console.error("Erro ao carregar financeiro:", err)
+      } finally {
+        setLoading(false)
       }
     }
     carregar()
-  }, [])
+  }, [imobiliariaId])
+
+  if (loadingUser || loading) return <p className="text-gray-500">Carregando...</p>
 
   const columns = [
     {

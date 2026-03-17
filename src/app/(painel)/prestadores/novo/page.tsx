@@ -2,15 +2,16 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useUsuario } from "@/lib/useUsuario"
 import { criarPrestador } from "@/services/prestadoresService"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 
 export default function NovoPrestadorPage() {
   const router = useRouter()
+  const { imobiliariaId, loading: loadingUser } = useUsuario()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    imobiliaria_id: "",
     nome: "",
     telefone: "",
     especialidade: "",
@@ -18,9 +19,31 @@ export default function NovoPrestadorPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!imobiliariaId) return
     setLoading(true)
-    await criarPrestador(form)
-    router.push("/prestadores")
+    try {
+      await criarPrestador({
+        imobiliaria_id: imobiliariaId,
+        nome: form.nome,
+        telefone: form.telefone || null,
+        especialidade: form.especialidade || null,
+      })
+      router.push("/prestadores")
+    } catch (err) {
+      console.error("Erro ao salvar prestador:", err)
+      alert("Erro ao salvar prestador. Verifique os dados e tente novamente.")
+      setLoading(false)
+    }
+  }
+
+  if (loadingUser) return <p className="text-gray-500">Carregando...</p>
+
+  if (!imobiliariaId) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+        Não foi possível identificar sua imobiliária.
+      </div>
+    )
   }
 
   return (
@@ -37,13 +60,11 @@ export default function NovoPrestadorPage() {
           label="Telefone"
           value={form.telefone}
           onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-          required
         />
         <Input
           label="Especialidade"
           value={form.especialidade}
           onChange={(e) => setForm({ ...form, especialidade: e.target.value })}
-          required
         />
         <Button type="submit" disabled={loading}>
           {loading ? "Salvando..." : "Salvar Prestador"}

@@ -8,7 +8,7 @@ import { SolicitacaoManutencao } from "@/types/database.types"
 export default function NovaManutencaoPage() {
   const router = useRouter()
 
-  async function handleSubmit(dados: Omit<SolicitacaoManutencao, "id">) {
+  async function handleSubmit(dados: Omit<SolicitacaoManutencao, "id" | "created_at">) {
     await criarManutencao(dados)
     router.push("/manutencoes")
   }

@@ -4,24 +4,27 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { listarImoveis } from "@/services/imoveisService"
 import { Imovel } from "@/types/database.types"
+import { useImobiliaria } from "@/lib/useImobiliaria"
 import Button from "@/components/ui/Button"
 import Table from "@/components/ui/Table"
 import { Plus } from "lucide-react"
 
 export default function ImoveisPage() {
   const [imoveis, setImoveis] = useState<Imovel[]>([])
+  const { imobiliariaId } = useImobiliaria()
 
   useEffect(() => {
+    if (!imobiliariaId) return
     async function carregar() {
       try {
-        const data = await listarImoveis("")
+        const data = await listarImoveis(imobiliariaId!)
         setImoveis(data)
       } catch (err) {
         console.error("Erro ao carregar imóveis:", err)
       }
     }
     carregar()
-  }, [])
+  }, [imobiliariaId])
 
   const columns = [
     { key: "codigo", label: "Código" },

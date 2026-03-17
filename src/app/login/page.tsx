@@ -8,7 +8,7 @@ import Input from "@/components/ui/Input"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
+  const [login, setLogin] = useState("")
   const [senha, setSenha] = useState("")
   const [erro, setErro] = useState("")
   const [loading, setLoading] = useState(false)
@@ -18,18 +18,69 @@ export default function LoginPage() {
     setErro("")
     setLoading(true)
 
+    let email = login.trim()
+
+    if (!email) {
+      setErro("Informe seu e-mail ou usuario.")
+      setLoading(false)
+      return
+    }
+
+    if (!email.includes("@")) {
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("email, ativo")
+        .ilike("username", email)
+        .maybeSingle()
+
+      if (error || !data) {
+        setErro("Usuario nao encontrado.")
+        setLoading(false)
+        return
+      }
+
+      if (!data.ativo) {
+        setErro("Seu usuario esta inativo.")
+        setLoading(false)
+        return
+      }
+
+      email = data.email
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
     })
 
     if (error) {
-      setErro("Email ou senha inválidos.")
+      setErro("Credenciais invalidas.")
       setLoading(false)
       return
     }
 
-    router.push("/dashboard")
+    const { data: usuario, error: usuarioError } = await supabase
+      .from("usuarios")
+      .select("id, ativo")
+      .ilike("email", email)
+      .maybeSingle()
+
+    if (usuarioError || !usuario) {
+      await supabase.auth.signOut()
+      setErro("Login autenticado, mas seu cadastro nao foi encontrado na tabela usuarios.")
+      setLoading(false)
+      return
+    }
+
+    if (!usuario.ativo) {
+      await supabase.auth.signOut()
+      setErro("Seu usuario esta inativo.")
+      setLoading(false)
+      return
+    }
+
+    router.replace("/dashboard")
+    router.refresh()
   }
 
   return (
@@ -42,10 +93,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            label="E-mail ou Usuario"
+            type="text"
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
+            placeholder="email@exemplo.com ou nome.usuario"
             required
           />
           <Input
