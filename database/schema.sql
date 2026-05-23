@@ -194,8 +194,51 @@ create table if not exists prestadores (
   nome            text not null,
   telefone        text null,
   especialidade   text null,
+  faturamento_tipo text null,
+  metodo_recebimento text null,
+  dia_recebimento text null,
+  dados_recebimento text null,
+  constraint prestadores_faturamento_tipo_check check (
+    faturamento_tipo is null or faturamento_tipo in ('nota_fiscal', 'recibo')
+  ),
+  constraint prestadores_metodo_recebimento_check check (
+    metodo_recebimento is null or metodo_recebimento in ('pix', 'dinheiro', 'deposito')
+  ),
+  constraint prestadores_dia_recebimento_check check (
+    dia_recebimento is null or dia_recebimento in ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo')
+  ),
   created_at      timestamptz not null default now()
 );
+
+alter table prestadores
+  add column if not exists faturamento_tipo text null,
+  add column if not exists metodo_recebimento text null,
+  add column if not exists dia_recebimento text null,
+  add column if not exists dados_recebimento text null;
+
+do $$ begin
+  alter table prestadores
+    add constraint prestadores_faturamento_tipo_check
+    check (faturamento_tipo is null or faturamento_tipo in ('nota_fiscal', 'recibo'));
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  alter table prestadores
+    add constraint prestadores_metodo_recebimento_check
+    check (metodo_recebimento is null or metodo_recebimento in ('pix', 'dinheiro', 'deposito'));
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  alter table prestadores
+    add constraint prestadores_dia_recebimento_check
+    check (dia_recebimento is null or dia_recebimento in ('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'));
+exception
+  when duplicate_object then null;
+end $$;
 
 create table if not exists orcamentos (
   id              uuid primary key default gen_random_uuid(),

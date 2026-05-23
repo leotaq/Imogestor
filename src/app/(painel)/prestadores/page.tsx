@@ -9,6 +9,27 @@ import Button from "@/components/ui/Button"
 import Table from "@/components/ui/Table"
 import { Plus } from "lucide-react"
 
+const FATURAMENTO_LABEL: Record<string, string> = {
+  nota_fiscal: "Nota fiscal",
+  recibo: "Recibo",
+}
+
+const METODO_RECEBIMENTO_LABEL: Record<string, string> = {
+  pix: "Pix",
+  dinheiro: "Dinheiro",
+  deposito: "Deposito",
+}
+
+const DIA_RECEBIMENTO_LABEL: Record<string, string> = {
+  segunda: "Segunda-feira",
+  terca: "Terca-feira",
+  quarta: "Quarta-feira",
+  quinta: "Quinta-feira",
+  sexta: "Sexta-feira",
+  sabado: "Sabado",
+  domingo: "Domingo",
+}
+
 export default function PrestadoresPage() {
   const { imobiliariaId, loading: loadingUser } = useUsuario()
   const [prestadores, setPrestadores] = useState<Prestador[]>([])
@@ -35,6 +56,31 @@ export default function PrestadoresPage() {
     { key: "nome", label: "Nome" },
     { key: "telefone", label: "Telefone" },
     { key: "especialidade", label: "Especialidade" },
+    {
+      key: "faturamento_tipo",
+      label: "Faturamento",
+      render: (item: Prestador) =>
+        item.faturamento_tipo ? FATURAMENTO_LABEL[item.faturamento_tipo] : "-",
+    },
+    {
+      key: "metodo_recebimento",
+      label: "Metodo",
+      render: (item: Prestador) =>
+        item.metodo_recebimento
+          ? METODO_RECEBIMENTO_LABEL[item.metodo_recebimento]
+          : "-",
+    },
+    {
+      key: "dados_recebimento",
+      label: "Dados pagamento",
+      render: (item: Prestador) => item.dados_recebimento || "-",
+    },
+    {
+      key: "dia_recebimento",
+      label: "Dia recebimento",
+      render: (item: Prestador) =>
+        item.dia_recebimento ? DIA_RECEBIMENTO_LABEL[item.dia_recebimento] : "-",
+    },
   ]
 
   return (

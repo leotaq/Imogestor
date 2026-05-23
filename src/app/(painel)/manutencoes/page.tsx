@@ -16,17 +16,20 @@ export default function ManutencoesPage() {
 
   useEffect(() => {
     if (!imobiliariaId) return
+    const id = imobiliariaId
+
     async function carregar() {
       try {
-        const data = await listarManutencoes(imobiliariaId!)
+        const data = await listarManutencoes(id)
         setManutencoes(data)
       } catch (err) {
-        console.error("Erro ao carregar manutenções:", err)
+        console.error("Erro ao carregar manutencoes:", err)
       } finally {
         setLoading(false)
       }
     }
-    carregar()
+
+    void carregar()
   }, [imobiliariaId])
 
   if (loadingUser || loading) return <p className="text-gray-500">Carregando...</p>
@@ -34,31 +37,36 @@ export default function ManutencoesPage() {
   const columns = [
     { key: "nome_solicitante", label: "Solicitante" },
     { key: "tipo_manutencao", label: "Tipo" },
-    { key: "descricao", label: "Descrição" },
+    { key: "descricao", label: "Descricao" },
     { key: "prazo", label: "Prazo" },
     { key: "status", label: "Status" },
     {
       key: "acoes",
-      label: "Ações",
+      label: "Acoes",
       render: (item: SolicitacaoManutencao) => (
-        <Link
-          href={`/manutencoes/${item.id}`}
-          className="text-primary-600 hover:underline text-sm"
-        >
-          Ver detalhes
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={`/manutencoes/${item.id}`} className="text-sm text-primary-600 hover:underline">
+            Ver detalhes
+          </Link>
+          <Link
+            href={`/orcamentos/novo?solicitacaoId=${item.id}`}
+            className="text-sm text-emerald-700 hover:underline"
+          >
+            Criar orcamento
+          </Link>
+        </div>
       ),
     },
   ]
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Manutenções</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Manutencoes</h1>
         <Link href="/manutencoes/nova">
           <Button>
             <span className="flex items-center gap-2">
-              <Plus size={16} /> Nova Solicitação
+              <Plus size={16} /> Nova solicitacao
             </span>
           </Button>
         </Link>

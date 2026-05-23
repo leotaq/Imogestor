@@ -81,13 +81,157 @@ Data de referencia: 2026-03-17
 
 ## Em andamento
 
-- Nenhuma entrada ativa no momento.
+- Nenhuma atividade ativa no momento.
 
 ## Bloqueios
 
 - Nenhum bloqueio registrado no momento.
 
 ## Concluido recentemente
+
+## [Codex] 2026-05-23 12:16 - adicionar salvamento de midias em manutencao
+- Status: concluido
+- Objetivo: incluir no cadastro de manutencao a opcao de selecionar pasta, anexar arquivos e salvar midias locais com a estrutura organizada usada anteriormente
+- Arquivos: `docs/ai_handoff.md`, `src/components/forms/ManutencaoForm.tsx`
+- Validacao: `npm run build` concluido com sucesso
+- Proximos passos: validar em `/manutencoes/nova` o fluxo com anexos de imagem/video/documento e confirmar criacao das pastas `Manutencao-data-tipo`, `img`, `video` e `doc-notas-fiscais`
+- Observacoes: quando houver arquivos anexados, a pasta de destino passa a ser obrigatoria antes de salvar a solicitacao
+
+## [Codex] 2026-05-23 12:05 - restaurar ambiente dev que nao inicia
+- Status: concluido
+- Objetivo: corrigir instabilidade do servidor local com erro `__webpack_modules__[moduleId] is not a function` e `Cannot find module './161.js'`
+- Arquivos: `docs/ai_handoff.md`, `.next/`
+- Validacao: encerrados processos `node`; executado `npm run clean`; servidor dev reiniciado em `http://127.0.0.1:3000`; `HEAD /login` e `HEAD /orcamentos` retornaram `200`
+- Proximos passos: se voltar a falhar, rodar `npm run dev:reset` e fazer hard refresh no navegador (`Ctrl+F5`)
+- Observacoes: o problema voltou a ser corrupcao de cache/HMR do Next em desenvolvimento, nao erro funcional das telas
+
+## [Codex] 2026-05-23 11:56 - adicionar seletor de ID de manutencao em orcamentos
+- Status: concluido
+- Objetivo: incluir opcao explicita para selecionar ID da manutencao no formulario de orcamento
+- Arquivos: `docs/ai_handoff.md`, `src/components/forms/OrcamentoForm.tsx`
+- Validacao: `npm run build` concluido com sucesso
+- Proximos passos: validar no navegador o fluxo em `/orcamentos/novo` usando o novo seletor de ID e tambem a busca livre
+- Observacoes: seletor de ID e campo de busca permanecem sincronizados para evitar perda de contexto da solicitacao escolhida
+
+## [Codex] 2026-05-23 11:42 - reforcar selecao/cadastro de imovel em manutencao
+- Status: concluido
+- Objetivo: mover definitivamente a selecao e cadastro rapido de imovel para o formulario de manutencao, deixando orcamento apenas vinculado a solicitacao existente
+- Arquivos: `docs/ai_handoff.md`, `src/components/forms/ManutencaoForm.tsx`, `src/app/(painel)/manutencoes/nova/page.tsx`
+- Validacao: `npm run build` concluido com sucesso
+- Proximos passos: validar no navegador o fluxo em `/manutencoes/nova` para imovel existente (busca por ID/codigo/endereco) e para novo imovel no mesmo formulario
+- Observacoes: manutencao agora usa `imobiliaria_id` do usuario logado para carregar/criar imoveis; orcamento permanece dependente de solicitacao existente
+
+## [Codex] 2026-05-23 11:30 - vincular orcamento a solicitacao de manutencao
+- Status: concluido
+- Objetivo: obrigar criacao de orcamento somente a partir de solicitacao de manutencao ja cadastrada e facilitar acesso direto pelo modulo de manutencoes
+- Arquivos: `docs/ai_handoff.md`, `src/components/forms/OrcamentoForm.tsx`, `src/app/(painel)/orcamentos/novo/page.tsx`, `src/app/(painel)/manutencoes/page.tsx`, `src/app/(painel)/manutencoes/[id]/page.tsx`
+- Validacao: `npm run build` concluido com sucesso
+- Proximos passos: validar no navegador o fluxo `Manutencoes -> Criar orcamento` e confirmar se o usuario evita abrir orcamento sem solicitacao
+- Observacoes: o formulario de orcamento nao cria mais solicitacao; agora exige solicitacao existente e permite pre-selecao via query `solicitacaoId`
+
+## [Codex] 2026-05-23 11:22 - diagnosticar erro server em /orcamentos/novo
+- Status: concluido
+- Objetivo: reproduzir e corrigir o erro `__webpack_modules__[moduleId] is not a function` na rota de novo orcamento
+- Arquivos: `docs/ai_handoff.md`, `.next/`
+- Validacao: `npm run clean`; reinicio do `next dev` em `http://127.0.0.1:3000`; `curl -I` retornou `200` para `/orcamentos` e `/orcamentos/novo`; `npm run build` concluido com sucesso
+- Proximos passos: se o erro reaparecer no navegador, executar `npm run dev:reset` e fazer hard refresh (`Ctrl+F5`) na aba com erro
+- Observacoes: causa observada novamente foi inconsistencia de cache/HMR do Next em dev, sem indicio de falha de compilacao do codigo da tela
+
+## [Codex] 2026-05-23 10:57 - reformular fluxo de orcamentos
+- Status: concluido
+- Objetivo: automatizar o ID da solicitacao no cadastro de orcamento, permitir selecao/digitacao de prestador e imovel, incluir cadastro rapido de novo imovel, ampliar descricao e organizar upload de midias em pastas locais
+- Arquivos: `docs/ai_handoff.md`, `src/components/forms/OrcamentoForm.tsx`, `src/app/(painel)/orcamentos/novo/page.tsx`, `src/app/(painel)/orcamentos/page.tsx`, `src/services/orcamentosService.ts`
+- Validacao: `npm run build` concluido com sucesso (type-check e geracao de rotas sem erro)
+- Proximos passos: validar fluxo manual no navegador em `/orcamentos/novo` (criar com imovel existente, criar com novo imovel e salvar midia com pasta selecionada)
+- Observacoes: o salvamento de midias em pasta local depende de navegador com suporte a `showDirectoryPicker` (ex.: Chromium); quando nao houver suporte, o formulario salva o orcamento normalmente sem gravacao local de arquivos
+
+## [Codex] 2026-05-23 10:39 - corrigir erro server em /prestadores
+- Status: concluido
+- Objetivo: reproduzir e corrigir o erro `__webpack_modules__[moduleId] is not a function` reportado na rota `/prestadores`
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: logs do Next apontaram cache corrompido em `.next/server/vendor-chunks/*`; processo `next dev` reiniciado apos `npm run clean`; `curl -I` confirmou `200` para `/prestadores` e `/prestadores/novo`
+- Proximos passos: se o erro reaparecer, executar `npm run dev:reset` e recarregar com hard refresh no navegador
+- Observacoes: causa foi cache/HMR do Next no ambiente local, sem indicio de falha de regra de negocio da tela
+
+## [Codex] 2026-05-23 10:34 - garantir cadastro de prestador mesmo com schema antigo
+- Status: concluido
+- Objetivo: fazer o cadastro de prestadores funcionar mesmo sem as colunas novas aplicadas no banco remoto
+- Arquivos: `docs/ai_handoff.md`, `src/services/prestadoresService.ts`, `src/app/(painel)/prestadores/novo/page.tsx`
+- Validacao: `npm run build` concluido; teste real de insert confirmou fallback compativel com schema antigo (`COMPAT_INSERT_OK`) e limpeza do registro de teste
+- Proximos passos: aplicar as migracoes `database/migrations/2026-05-23_add_pagamento_prestadores.sql` e `database/migrations/2026-05-23_add_dados_recebimento_prestadores.sql` quando houver acesso SQL administrativo
+- Observacoes: quando a API retornar `PGRST204` por coluna ausente, o service salva em modo compativel e preserva os dados de pagamento em marcador estruturado dentro de `especialidade`
+
+## [Codex] 2026-05-23 10:27 - diagnosticar erro ao salvar prestador
+- Status: concluido
+- Objetivo: identificar a causa real do erro no cadastro de prestador apos adicao dos novos campos de pagamento
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: reproducao de insert com Service Role retornou `PGRST204` com mensagem `Could not find the 'dados_recebimento' column of 'prestadores' in the schema cache`
+- Proximos passos: aplicar as migracoes `database/migrations/2026-05-23_add_pagamento_prestadores.sql` e `database/migrations/2026-05-23_add_dados_recebimento_prestadores.sql` na base atual
+- Observacoes: erro nao e da tela; e incompatibilidade entre codigo local e schema remoto ainda sem a coluna nova
+
+## [Codex] 2026-05-23 10:23 - diagnosticar pagina que nao abre
+- Status: concluido
+- Objetivo: reproduzir erro de abertura reportado apos ajustes no cadastro de prestadores
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: servidor de desenvolvimento estava parado; `next dev` reiniciado em `http://127.0.0.1:3000`; checagem HTTP retornou `200` para `/login`, `/prestadores` e `/prestadores/novo`
+- Proximos passos: acessar o sistema por `http://127.0.0.1:3000` e manter uma instancia `next dev` ativa
+- Observacoes: nao foi identificado erro de codigo na pagina durante o teste de rota
+
+## [Codex] 2026-05-23 10:21 - adicionar dados de recebimento no prestador
+- Status: concluido
+- Objetivo: incluir campo digitavel para dados de recebimento vinculado ao metodo de pagamento do prestador
+- Arquivos: `docs/ai_handoff.md`, `src/app/(painel)/prestadores/novo/page.tsx`, `src/app/(painel)/prestadores/page.tsx`, `src/types/database.types.ts`, `database/schema.sql`, `database/migrations/2026-05-23_add_dados_recebimento_prestadores.sql`
+- Validacao: `npm run build` concluido com sucesso
+- Proximos passos: aplicar a migracao `database/migrations/2026-05-23_add_dados_recebimento_prestadores.sql` na base existente para gravar o novo campo
+- Observacoes: ao selecionar metodo de recebimento, o formulario agora exige preenchimento de dados de pagamento com orientacao especifica por metodo
+
+## [Codex] 2026-05-23 10:17 - ampliar cadastro de prestadores
+- Status: concluido
+- Objetivo: incluir no cadastro de prestadores os campos de faturamento, metodo de recebimento e dia da semana para recebimento
+- Arquivos: `docs/ai_handoff.md`, `src/app/(painel)/prestadores/novo/page.tsx`, `src/app/(painel)/prestadores/page.tsx`, `src/types/database.types.ts`, `database/schema.sql`, `database/migrations/2026-05-23_add_pagamento_prestadores.sql`
+- Validacao: `npm run build` concluido com sucesso
+- Proximos passos: aplicar a migracao `database/migrations/2026-05-23_add_pagamento_prestadores.sql` na base existente antes de cadastrar novos prestadores em producao
+- Observacoes: cadastro agora exige selecao de faturamento, metodo de recebimento e dia de recebimento; listagem de prestadores tambem exibe esses campos
+
+## [Codex] 2026-05-23 10:08 - diagnosticar dashboard que nao abre
+- Status: concluido
+- Objetivo: reproduzir erro de abertura reportado pelo usuario e corrigir a causa
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: detectado conflito de porta (`EADDRINUSE`) com multiplas instancias `next dev` (3000, 3001 e 3020); processos antigos encerrados; servidor reiniciado em `http://127.0.0.1:3000`; checagem com `curl -I` retornou `200` para `/login` e `/dashboard`
+- Proximos passos: acessar o app por `http://127.0.0.1:3000` e manter apenas uma instancia `next dev` ativa
+- Observacoes: o problema era de ambiente local (processos presos), nao de codigo da pagina do dashboard
+
+## [Codex] 2026-05-23 10:00 - remover cards de valores no dashboard
+- Status: concluido
+- Objetivo: retirar da pagina do dashboard os indicadores financeiros (valores, custos e taxas)
+- Arquivos: `docs/ai_handoff.md`, `src/app/(painel)/dashboard/page.tsx`
+- Validacao: `npm run clean` e `npm run build` concluidos com sucesso
+- Proximos passos: validar visualmente o dashboard no navegador para confirmar o layout com 3 cards
+- Observacoes: removida tambem a consulta da tabela `financeiro` no carregamento do dashboard
+
+## [Codex] 2026-05-23 09:55 - resetar senha de acesso
+- Status: concluido
+- Objetivo: redefinir credencial de acesso no Supabase para recuperar login do usuario
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: consulta na tabela `usuarios` encontrou 1 conta ativa (`leotaq@gmail.com`); senha redefinida via Supabase Admin; login validado com `signInWithPassword` usando a nova senha
+- Proximos passos: realizar login pelo app com `leotaq@gmail.com` ou `leoadm` e alterar para uma senha forte apos o acesso
+- Observacoes: senha solicitada aplicada como `ariele22`
+
+## [Codex] 2026-05-23 09:41 - identificar Supabase em uso
+- Status: concluido
+- Objetivo: confirmar qual projeto Supabase esta configurado no ambiente local atual
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: leitura de `.env.local`, `.env.example` e busca por variaveis `NEXT_PUBLIC_SUPABASE_URL` no repositorio
+- Proximos passos: manter chaves do `.env.local` fora de compartilhamento publico e rotacionar se necessario
+- Observacoes: projeto ativo identificado pela URL `https://outujbsyzdeqbwvlutzh.supabase.co` (ref `outujbsyzdeqbwvlutzh`)
+
+## [Codex] 2026-05-23 09:37 - validar estado atual do projeto
+- Status: concluido
+- Objetivo: executar validacoes automatizadas para verificar como o projeto esta no estado atual
+- Arquivos: `docs/ai_handoff.md`
+- Validacao: `npm run test` falhou porque nao existe script `test`; `npm run lint` abriu prompt interativo de configuracao do ESLint; `npm run build` concluiu com sucesso em ambiente com `.env.local`
+- Proximos passos: criar script de testes automatizados e configurar ESLint para o comando `npm run lint` rodar sem interacao
+- Observacoes: o build atual do Next.js 14.2.15 compila, faz type-check e gera as rotas sem erro
 
 ## [Codex] 2026-03-17 21:40 - corrigir build do Vercel sem env do Supabase admin
 - Status: concluido

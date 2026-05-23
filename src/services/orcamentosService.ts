@@ -2,7 +2,12 @@ import { supabase } from "@/lib/supabaseClient"
 import { Orcamento } from "@/types/database.types"
 
 export async function listarOrcamentos(imobiliariaId: string) {
-  const { data, error } = await supabase.from("orcamentos").select("*").eq("imobiliaria_id", imobiliariaId)
+  const { data, error } = await supabase
+    .from("orcamentos")
+    .select("*")
+    .eq("imobiliaria_id", imobiliariaId)
+    .order("created_at", { ascending: false })
+
   if (error) throw error
   return data as Orcamento[]
 }

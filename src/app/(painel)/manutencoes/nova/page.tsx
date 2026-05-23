@@ -14,8 +14,15 @@ export default function NovaManutencaoPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Nova Solicitação de Manutenção</h1>
+    <div className="space-y-6">
+      <div className="max-w-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Nova solicitacao de manutencao</h1>
+        <p className="mt-2 text-sm text-gray-500">
+          Selecione um imovel existente ou cadastre um novo para abrir a solicitacao. Os orcamentos
+          ficam vinculados a partir desta etapa.
+        </p>
+      </div>
+
       <ManutencaoForm onSubmit={handleSubmit} />
     </div>
   )

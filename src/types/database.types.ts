@@ -22,6 +22,19 @@ export type PersonRole = "manager" | "inspector" | "attendant"
 
 export type TipoUsuario = "admin" | "gestor" | "atendente" | "prestador"
 
+export type FaturamentoPrestador = "nota_fiscal" | "recibo"
+
+export type MetodoRecebimentoPrestador = "pix" | "dinheiro" | "deposito"
+
+export type DiaRecebimentoPrestador =
+  | "segunda"
+  | "terca"
+  | "quarta"
+  | "quinta"
+  | "sexta"
+  | "sabado"
+  | "domingo"
+
 // ============================================================
 // Tabelas SaaS (português)
 // ============================================================
@@ -159,6 +172,10 @@ export interface Prestador {
   nome: string
   telefone: string | null
   especialidade: string | null
+  faturamento_tipo: FaturamentoPrestador | null
+  metodo_recebimento: MetodoRecebimentoPrestador | null
+  dia_recebimento: DiaRecebimentoPrestador | null
+  dados_recebimento: string | null
   created_at: string
 }
 
