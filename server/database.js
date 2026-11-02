@@ -70,6 +70,7 @@ function ensureInspectionKinds(db) {
       status TEXT NOT NULL CHECK(status IN ('new','received','in_progress','no_contract','completed','finalized','cancelled')),
       deadline_at TEXT NOT NULL DEFAULT '', scheduled_at TEXT NOT NULL DEFAULT '',
       scheduled_end TEXT NOT NULL DEFAULT '', duration_minutes INTEGER NOT NULL DEFAULT 0 CHECK(duration_minutes BETWEEN 0 AND 480),
+      contract_id TEXT NOT NULL DEFAULT '',
       reason TEXT NOT NULL DEFAULT '', completion_note TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL, updated_at TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 1,
       UNIQUE(id,org_id), UNIQUE(org_id,protocol),
@@ -97,6 +98,12 @@ function ensureInspectionScheduleColumns(db) {
   if(!columns.has('scheduled_end')) db.exec("ALTER TABLE inspections ADD COLUMN scheduled_end TEXT NOT NULL DEFAULT ''");
   if(!columns.has('duration_minutes')) db.exec('ALTER TABLE inspections ADD COLUMN duration_minutes INTEGER NOT NULL DEFAULT 0 CHECK(duration_minutes BETWEEN 0 AND 480)');
   db.exec('CREATE INDEX IF NOT EXISTS inspections_inspector_schedule ON inspections(org_id,inspector_id,scheduled_at)');
+}
+
+function ensureInspectionContractColumn(db) {
+  const columns=new Set(db.prepare('PRAGMA table_info(inspections)').all().map(column=>column.name));
+  if(!columns.has('contract_id')) db.exec("ALTER TABLE inspections ADD COLUMN contract_id TEXT NOT NULL DEFAULT ''");
+  db.exec('CREATE INDEX IF NOT EXISTS inspections_contract_id ON inspections(org_id,contract_id)');
 }
 
 export function openDatabase(filename = ':memory:') {
@@ -147,6 +154,7 @@ export function openDatabase(filename = ':memory:') {
       status TEXT NOT NULL CHECK(status IN ('new','received','in_progress','no_contract','completed','finalized','cancelled')),
       deadline_at TEXT NOT NULL DEFAULT '', scheduled_at TEXT NOT NULL DEFAULT '',
       scheduled_end TEXT NOT NULL DEFAULT '', duration_minutes INTEGER NOT NULL DEFAULT 0 CHECK(duration_minutes BETWEEN 0 AND 480),
+      contract_id TEXT NOT NULL DEFAULT '',
       reason TEXT NOT NULL DEFAULT '', completion_note TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL, updated_at TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 1,
       UNIQUE(id,org_id), UNIQUE(org_id,protocol),
@@ -245,6 +253,7 @@ export function openDatabase(filename = ':memory:') {
   ensurePropertyAddressColumns(db);
   ensureInspectionKinds(db);
   ensureInspectionScheduleColumns(db);
+  ensureInspectionContractColumn(db);
   return db;
 }
 

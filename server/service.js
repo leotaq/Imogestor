@@ -187,10 +187,17 @@ export class Service {
   inspectionDetail(user,id) {
     this.inspectionAccess(user);
     const inspection=this.row('inspections',id,user.org_id);
+    const contract=inspection.contract_id?this.db.prepare(`
+      SELECT c.*, u.name requester_name 
+      FROM contracts c 
+      JOIN users u ON u.id=c.requested_by AND u.org_id=c.org_id 
+      WHERE c.id=? AND c.org_id=?
+    `).get(inspection.contract_id,user.org_id):null;
     return {...inspection,
       property:this.db.prepare('SELECT id,code,name,address,unit FROM properties WHERE id=? AND org_id=?').get(inspection.property_id,user.org_id),
       requester:this.db.prepare('SELECT id,name,role FROM users WHERE id=? AND org_id=?').get(inspection.requester_id,user.org_id),
       inspector:inspection.inspector_id?this.db.prepare('SELECT id,name,role FROM users WHERE id=? AND org_id=?').get(inspection.inspector_id,user.org_id):null,
+      contract,
       events:this.db.prepare('SELECT * FROM inspection_events WHERE inspection_id=? AND org_id=? ORDER BY id').all(id,user.org_id)};
   }
   inspectionEvent(user,id,action,detail) {
@@ -204,17 +211,38 @@ export class Service {
     if(property.active!==1) throw new AppError('Este imóvel está arquivado e não aceita novos pedidos.');
     const requesterId=input.requester_id||user.id,requester=this.row('users',requesterId,user.org_id);
     if(requester.active!==1||!['admin','staff'].includes(requester.role)) throw new AppError('Selecione alguém ativo da equipe como solicitante.');
-    const deadline=input.deadline_at?date(input.deadline_at):'';
+    let deadline=input.deadline_at?date(input.deadline_at):'';
     const inspectorId=input.inspector_id||null,scheduled=input.scheduled_at?dateTime(input.scheduled_at):'';
     if(Boolean(inspectorId)!==Boolean(scheduled)) throw new AppError('Informe o vistoriador e a data da proposta juntos.');
+
+    let contractId=input.contract_id||'';
+    let linkedContract=null;
+    if(contractId) {
+      linkedContract=this.db.prepare('SELECT * FROM contracts WHERE id=? AND org_id=?').get(contractId,user.org_id);
+    } else if(kind==='occupation') {
+      linkedContract=this.db.prepare("SELECT * FROM contracts WHERE org_id=? AND property_id=? AND kind='occupation' AND requested_by=? ORDER BY requested_at DESC LIMIT 1").get(user.org_id,property.id,requester.id);
+      if(!linkedContract) {
+        linkedContract=this.db.prepare("SELECT * FROM contracts WHERE org_id=? AND property_id=? AND kind='occupation' ORDER BY requested_at DESC LIMIT 1").get(user.org_id,property.id);
+      }
+      if(linkedContract) contractId=linkedContract.id;
+    }
+
+    if(!deadline&&linkedContract?.deadline_at) {
+      deadline=linkedContract.deadline_at;
+    }
+
     const id=randomUUID(),now=new Date().toISOString();
     return this.transaction(()=>{
       const appointment=scheduled?this.validateAppointment(user,inspectorId,scheduled,input.duration_minutes):{start:'',end:'',duration:0};
       const number=this.db.prepare('SELECT COUNT(*) n FROM inspections WHERE org_id=?').get(user.org_id).n;
       const protocol=`VST-${String(number+1).padStart(4,'0')}`;
-      this.db.prepare(`INSERT INTO inspections(id,org_id,protocol,property_id,property_code_snapshot,address_snapshot,kind,requester_id,inspector_id,status,deadline_at,scheduled_at,scheduled_end,duration_minutes,created_at,updated_at)
-        VALUES(?,?,?,?,?,?,?,?,?,'new',?,?,?,?,?,?)`).run(id,user.org_id,protocol,property.id,property.code,`${property.address} · ${property.unit}`,kind,requester.id,inspectorId,deadline,appointment.start,appointment.end,appointment.duration,now,now);
+      this.db.prepare(`INSERT INTO inspections(id,org_id,protocol,property_id,property_code_snapshot,address_snapshot,kind,requester_id,inspector_id,status,deadline_at,scheduled_at,scheduled_end,duration_minutes,contract_id,created_at,updated_at)
+        VALUES(?,?,?,?,?,?,?,?,?,'new',?,?,?,?,?,?,?)`).run(id,user.org_id,protocol,property.id,property.code,`${property.address} · ${property.unit}`,kind,requester.id,inspectorId,deadline,appointment.start,appointment.end,appointment.duration,contractId,now,now);
       this.inspectionEvent(user,id,'Pedido registrado',`${inspectionKindNames[kind]} · ${property.code}.`);
+      if(linkedContract) {
+        this.inspectionEvent(user,id,'Contrato vinculado',`Vinculada ao contrato de ocupação solicitado por ${requester.name} (Previsão de entrega/assinatura: ${linkedContract.deadline_at}).`);
+        this.contractEvent(user,linkedContract.id,'Vistoria vinculada',`Vistoria de ocupação ${protocol} criada por ${requester.name} e vinculada.`,now);
+      }
       if(scheduled)this.inspectionEvent(user,id,'Horário proposto',`${this.row('users',inspectorId,user.org_id).name} · ${appointment.start}–${appointment.end}. Aguardando aceite do vistoriador.`);
       return this.inspectionDetail(user,id);
     });
@@ -245,8 +273,8 @@ export class Service {
     return this.transaction(()=>{
       const now=new Date().toISOString();
       const appointment=scheduled?((appointmentChanged||current.status==='new')&&nextStatus!=='cancelled'?this.validateAppointment(user,inspectorId,scheduled,duration,id):{start:scheduled,end:current.scheduled_end||appointmentEnd(scheduled,current.duration_minutes),duration}):{start:'',end:'',duration:0};
-      const result=this.db.prepare(`UPDATE inspections SET inspector_id=?,scheduled_at=?,scheduled_end=?,duration_minutes=?,status=?,reason=?,completion_note=?,updated_at=?,revision=revision+1
-        WHERE id=? AND org_id=? AND revision=?`).run(inspectorId,appointment.start,appointment.end,appointment.duration,nextStatus,reason,completion,now,id,user.org_id,input.revision);
+      const result=this.db.prepare(`UPDATE inspections SET inspector_id=?,scheduled_at=?,scheduled_end=?,duration_minutes=?,status=?,reason=?,completion_note=?,contract_id=coalesce(?,contract_id),updated_at=?,revision=revision+1
+        WHERE id=? AND org_id=? AND revision=?`).run(inspectorId,appointment.start,appointment.end,appointment.duration,nextStatus,reason,completion,input.contract_id!==undefined?input.contract_id:null,now,id,user.org_id,input.revision);
       if(!result.changes) throw new AppError('A vistoria mudou. Atualize antes de salvar.',409);
       const changes=[];
       if(nextStatus!==current.status) changes.push(`${inspectionStateNames[current.status]} → ${inspectionStateNames[nextStatus]}`);
@@ -274,7 +302,14 @@ export class Service {
     const property=this.db.prepare('SELECT id,code,name,address,unit FROM properties WHERE id=? AND org_id=?').get(c.property_id,user.org_id);
     const requester=this.db.prepare('SELECT id,name FROM users WHERE id=? AND org_id=?').get(c.requested_by,user.org_id);
     const events=this.db.prepare('SELECT * FROM contract_events WHERE contract_id=? AND org_id=? ORDER BY id').all(id,user.org_id);
-    return {...c,property,requester,overdue:c.status!=='sent_to_manager'&&c.deadline_at<todayInSaoPaulo(),events};
+    const inspections=this.db.prepare(`
+      SELECT i.id,i.protocol,i.kind,i.status,i.scheduled_at,i.deadline_at,v.name inspector_name
+      FROM inspections i
+      LEFT JOIN users v ON v.id=i.inspector_id AND v.org_id=i.org_id
+      WHERE i.org_id=? AND (i.contract_id=? OR (i.property_id=? AND i.kind='occupation' AND i.requester_id=?))
+      ORDER BY i.created_at DESC
+    `).all(user.org_id,id,c.property_id,c.requested_by);
+    return {...c,property,requester,inspections,overdue:c.status!=='sent_to_manager'&&c.deadline_at<todayInSaoPaulo(),events};
   }
   listContracts(user) {
     if(!['admin','staff'].includes(user.role)) return [];
@@ -292,13 +327,23 @@ export class Service {
     this.admin(user);
     const property=this.row('properties',input.property_id,user.org_id),kind=pick(input.kind,CONTRACT_KINDS,'Tipo de contrato');
     if(property.active!==1) throw new AppError('Este imóvel está arquivado e não aceita novos pedidos.');
+    const requesterId=input.requested_by||user.id,requester=this.row('users',requesterId,user.org_id);
+    if(requester.active!==1||!['admin','staff'].includes(requester.role)) throw new AppError('Selecione alguém ativo da equipe como solicitante.');
     const manualReason=text(input.manual_reason||'','Motivo',400,kind==='other');
     const details=text(input.details||'','Informações para confecção',4000,false);
     const deadline=date(input.deadline_at),id=randomUUID(),now=new Date().toISOString();
     return this.transaction(()=>{
       this.db.prepare(`INSERT INTO contracts(id,org_id,property_id,property_code_snapshot,address_snapshot,kind,manual_reason,details,requested_by,requested_at,deadline_at,status,updated_at)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,'requested',?)`).run(id,user.org_id,property.id,property.code,`${property.address} · ${property.unit}`,kind,manualReason,details,user.id,now,deadline,now);
-      this.contractEvent(user,id,'Solicitação criada',`${kind==='occupation'?'Ocupação':kind==='addendum'?'Aditivo':manualReason} · ${property.code}. Prazo: ${deadline}.`,now);
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,'requested',?)`).run(id,user.org_id,property.id,property.code,`${property.address} · ${property.unit}`,kind,manualReason,details,requester.id,now,deadline,now);
+      this.contractEvent(user,id,'Solicitação criada',`${kind==='occupation'?'Ocupação':kind==='addendum'?'Aditivo':manualReason} · ${property.code}. Previsão de entrega e assinatura: ${deadline}.`,now);
+      if(kind==='occupation') {
+        const openInspection=this.db.prepare("SELECT id,protocol FROM inspections WHERE org_id=? AND property_id=? AND kind='occupation' AND requester_id=? AND (contract_id='' OR contract_id IS NULL) ORDER BY created_at DESC LIMIT 1").get(user.org_id,property.id,requester.id);
+        if(openInspection) {
+          this.db.prepare("UPDATE inspections SET contract_id=?,updated_at=? WHERE id=? AND org_id=?").run(id,now,openInspection.id,user.org_id);
+          this.inspectionEvent(user,openInspection.id,'Contrato vinculado',`Vinculada à solicitação de contrato de ocupação (Previsão de entrega/assinatura: ${deadline}).`);
+          this.contractEvent(user,id,'Vistoria vinculada',`Vistoria de ocupação ${openInspection.protocol} vinculada.`,now);
+        }
+      }
       return this.contractRecord(user,id);
     });
   }

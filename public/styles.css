@@ -202,3 +202,21 @@ label{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:500;
 :root[data-theme="dark"] .inspection-protocol{background:#171a1d}
 :root[data-theme="dark"] .inspection-card-requester{background:#202824;border-left-color:#62ad87}
 :root[data-theme="dark"] .inspection-card-requester strong{color:#b9dfc3}
+
+.contract-linked-banner{border:1px solid #c9decb;background:#f3f9f4;border-radius:9px;padding:12px 14px;margin:6px 0 12px;display:grid;gap:6px}
+.contract-linked-header{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.contract-linked-tag{display:inline-flex;align-items:center;gap:7px;font-weight:650;color:var(--green-dark)}
+.contract-linked-tag .icon{width:15px;height:15px}
+.contract-linked-body p{font-size:10px;margin:0;color:var(--ink)}
+.contract-linked-details{display:block;font-size:9px;color:var(--muted);font-style:italic;margin-top:3px}
+.contract-empty-hint{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);background:#f8faf9;border:1px dashed var(--line);border-radius:8px;padding:9px 12px;margin:6px 0 12px;flex-wrap:wrap}
+.contract-empty-hint .icon{width:15px;height:15px;color:var(--amber)}
+.inspection-contract-card,.contract-inspection-card{background:#fbfdfc;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0;display:grid;gap:10px}
+.linked-inspection-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:11px;gap:10px}
+.linked-inspection-item p{margin:3px 0 0;font-size:9px;color:var(--muted)}
+:root[data-theme="dark"] .contract-linked-banner{background:#1c2b22;border-color:#2b4534;color:#b7e0c4}
+:root[data-theme="dark"] .contract-linked-tag{color:#8dd0a3}
+:root[data-theme="dark"] .contract-linked-body p{color:#d5e5db}
+:root[data-theme="dark"] .contract-empty-hint{background:#1a1e22;border-color:var(--line);color:#8a9e94}
+:root[data-theme="dark"] .inspection-contract-card,:root[data-theme="dark"] .contract-inspection-card{background:#1b2024;border-color:var(--line)}
+:root[data-theme="dark"] .linked-inspection-item{background:#22272d;border-color:var(--line)}

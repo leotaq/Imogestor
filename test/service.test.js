@@ -106,3 +106,18 @@ test('snapshot do chamado preserva titular e endereço após mudança de cadastr
     assert.equal(kept.property.tenant,'Novo titular fictício');
   }finally{db.close();}
 });
+
+test('solicitação de contrato vincula automaticamente à vistoria de ocupação pelo mesmo solicitante e imóvel',()=>{
+  const {db,service:s,admin}=fixture();try{
+    const contract=s.createContract(admin,{property_id:'p1',kind:'occupation',deadline_at:'2026-12-20',details:'Contrato de ocupação novo locatário',requested_by:admin.id});
+    assert.equal(contract.kind,'occupation');assert.equal(contract.deadline_at,'2026-12-20');
+    const inspection=s.createInspection(admin,{property_id:'p1',kind:'occupation',requester_id:admin.id});
+    assert.equal(inspection.contract_id,contract.id);
+    assert.equal(inspection.deadline_at,'2026-12-20');
+    assert.equal(inspection.contract.id,contract.id);
+    const contractUpdated=s.contractDetail(admin,contract.id);
+    assert.equal(contractUpdated.inspections.length,1);
+    assert.equal(contractUpdated.inspections[0].id,inspection.id);
+    assert.equal(contractUpdated.inspections[0].protocol,inspection.protocol);
+  }finally{db.close();}
+});
