@@ -236,3 +236,5 @@ label{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:500;
 .inspection-contract-card .section-title,.contract-inspection-card .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 
 .sidebar::-webkit-scrollbar{width:5px}.sidebar::-webkit-scrollbar-track{background:transparent}.sidebar::-webkit-scrollbar-thumb{background:#ffffff33;border-radius:4px}.sidebar::-webkit-scrollbar-thumb:hover{background:#ffffff55}
+
+.sidebar>.brand{margin-bottom:24px}
