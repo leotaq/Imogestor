@@ -91,10 +91,13 @@ export function createHandler({db,uploadsDir}) {
         if(req.method==='GET') {json(service.contractDetail(user,contractMatch[1]));return;}
         if(req.method==='PATCH') {json(service.updateContract(user,contractMatch[1],await body(req)));return;}
       }
+      const resetMatch=pathname.match(/^\/api\/inspections\/([\w-]+)\/reset$/);
+      if(resetMatch&&req.method==='POST') {json(service.resetInspection(user,resetMatch[1]));return;}
       const inspectionMatch=pathname.match(/^\/api\/inspections\/([\w-]+)$/);
       if(inspectionMatch) {
         if(req.method==='GET') {json(service.inspectionDetail(user,inspectionMatch[1]));return;}
         if(req.method==='PATCH') {json(service.updateInspection(user,inspectionMatch[1],await body(req)));return;}
+        if(req.method==='DELETE') {json(service.deleteInspection(user,inspectionMatch[1]));return;}
       }
       const fileMatch=pathname.match(/^\/api\/attachments\/([\w-]+)$/);
       if(fileMatch&&req.method==='GET') {

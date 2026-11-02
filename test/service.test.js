@@ -121,3 +121,25 @@ test('solicitação de contrato vincula automaticamente à vistoria de ocupaçã
     assert.equal(contractUpdated.inspections[0].protocol,inspection.protocol);
   }finally{db.close();}
 });
+
+test('permite limpar acompanhamento e redefinir vistoria para o estado Nova',()=>{
+  const {db,service:s,admin}=fixture();try{
+    const insp=s.createInspection(admin,{property_id:'p1',kind:'move_out',requester_id:admin.id});
+    const updated=s.updateInspection(admin,insp.id,{revision:insp.revision,status:'in_progress',inspector_id:'rafael',scheduled_at:'2026-12-15T10:00',duration_minutes:60,reason:'',completion_note:''});
+    assert.equal(updated.status,'in_progress');assert.equal(updated.inspector.name,'Rafael Lima');assert.equal(updated.scheduled_at,'2026-12-15T10:00');
+    const reset=s.resetInspection(admin,insp.id);
+    assert.equal(reset.status,'new');assert.equal(reset.inspector,null);assert.equal(reset.scheduled_at,'');assert.equal(reset.duration_minutes,0);
+    // Disponível para adicionar novos dados novamente
+    const reAdded=s.updateInspection(admin,reset.id,{revision:reset.revision,status:'new',inspector_id:'rafael',scheduled_at:'2026-12-16T14:00',duration_minutes:45,reason:'',completion_note:''});
+    assert.equal(reAdded.scheduled_at,'2026-12-16T14:00');
+  }finally{db.close();}
+});
+
+test('permite excluir vistoria permanentemente',()=>{
+  const {db,service:s,admin}=fixture();try{
+    const insp=s.createInspection(admin,{property_id:'p1',kind:'visit',requester_id:admin.id});
+    const deleted=s.deleteInspection(admin,insp.id);
+    assert.equal(deleted.ok,true);
+    assert.throws(()=>s.inspectionDetail(admin,insp.id),{status:404});
+  }finally{db.close();}
+});

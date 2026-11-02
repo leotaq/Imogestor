@@ -11,6 +11,7 @@
 | 31/10/2026 | Prioridade atual: vistorias, pedidos e agendamentos no fluxo do sistema antigo; manutenção passa para etapa posterior. | Instrução direta do usuário; substitui as prioridades de 19/10. |
 | 31/10/2026 | Adicionar pedidos internos de confecção de contrato: ocupação, aditivo ou motivo manual; imóvel compartilhado com vistorias; data de solicitação automática, prazo, justificativa de atraso e envio à gestora registrado pelo sistema. | Instrução direta do usuário. Gestão abre; Gestão/Atendimento acompanham. O escopo controla o pedido, sem gerar documento jurídico ou assinatura. |
 | 02/11/2026 | Auto-vínculo de contrato e vistoria de ocupação: ao criar vistoria de ocupação para um imóvel, o sistema detecta solicitações ativas de contrato de ocupação geradas pelo mesmo solicitante (ou no mesmo imóvel), pré-preenche o prazo com a data prevista de entrega e assinatura, vincula o contrato à vistoria e expõe navegação cruzada direta entre os detalhes. | Instrução direta do usuário. |
+| 02/11/2026 | Limpeza de acompanhamento e exclusão de vistoria: adicionada a opção 'Limpar acompanhamento' (reseta status para Nova, remove vistoriador, agendamento, notas e motivo, deixando a vistoria disponível para preenchimento novamente) e 'Excluir vistoria' permanente via `DELETE /api/inspections/:id`. Transições de status tornadas flexíveis para correções operacionais. | Instrução direta do usuário. |
 
 ## Banco compartilhado — 19/10/2026
 

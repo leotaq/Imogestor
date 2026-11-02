@@ -220,3 +220,13 @@ label{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:500;
 :root[data-theme="dark"] .contract-empty-hint{background:#1a1e22;border-color:var(--line);color:#8a9e94}
 :root[data-theme="dark"] .inspection-contract-card,:root[data-theme="dark"] .contract-inspection-card{background:#1b2024;border-color:var(--line)}
 :root[data-theme="dark"] .linked-inspection-item{background:#22272d;border-color:var(--line)}
+
+.inspection-danger-zone{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:8px}
+.text-danger{color:#b33a3a!important;border-color:#eccaca!important}
+.text-danger:hover{background:#fdf2f2!important;color:#912323!important}
+.text-amber{color:#b46c19!important;border-color:#fae2c5!important}
+.text-amber:hover{background:#fff8ee!important;color:#8d4f07!important}
+:root[data-theme="dark"] .text-danger{color:#f89090!important;border-color:#5c3232!important}
+:root[data-theme="dark"] .text-danger:hover{background:#301d1d!important}
+:root[data-theme="dark"] .text-amber{color:#f5be76!important;border-color:#594326!important}
+:root[data-theme="dark"] .text-amber:hover{background:#302518!important}

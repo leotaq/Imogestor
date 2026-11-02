@@ -252,7 +252,17 @@ export class Service {
     const current=this.row('inspections',id,user.org_id);
     if(!Number.isInteger(input.revision)||input.revision!==current.revision) throw new AppError('A vistoria mudou. Atualize a página antes de salvar.',409);
     const status=pick(input.status,INSPECTION_STATUSES,'Situação');
-    const transitions={new:['new','received','no_contract','cancelled'],received:['new','received','in_progress','no_contract','cancelled'],in_progress:['in_progress','completed','no_contract','cancelled'],no_contract:['no_contract'],completed:['completed','finalized'],finalized:['finalized'],cancelled:['cancelled']};
+    const transitions=user.role==='admin'
+      ? Object.fromEntries(INSPECTION_STATUSES.map(s=>[s,INSPECTION_STATUSES]))
+      : {
+          new:['new','received','in_progress','no_contract','cancelled'],
+          received:['new','received','in_progress','no_contract','cancelled'],
+          in_progress:['new','received','in_progress','completed','no_contract','cancelled'],
+          no_contract:['new','received','in_progress','no_contract','cancelled'],
+          completed:['new','received','in_progress','completed','finalized','cancelled'],
+          finalized:['new','received','in_progress','completed','finalized','cancelled'],
+          cancelled:['new','received','in_progress','cancelled']
+        };
     const inspectorId=input.inspector_id||null;
     const scheduled=input.scheduled_at?dateTime(input.scheduled_at):'';
     if(Boolean(inspectorId)!==Boolean(scheduled)) throw new AppError('Informe o vistoriador e a data da vistoria juntos.');
@@ -294,6 +304,28 @@ export class Service {
         this.db.prepare("UPDATE inspection_notifications SET read_at=? WHERE org_id=? AND inspection_id=? AND recipient_id=? AND read_at=''").run(now,user.org_id,id,user.id);
       }
       return this.inspectionDetail(user,id);
+    });
+  }
+  resetInspection(user,id) {
+    this.inspectionAccess(user);
+    this.row('inspections',id,user.org_id);
+    const now=new Date().toISOString();
+    return this.transaction(()=>{
+      this.db.prepare(`UPDATE inspections SET status='new',inspector_id=NULL,scheduled_at='',scheduled_end='',duration_minutes=0,reason='',completion_note='',updated_at=?,revision=revision+1
+        WHERE id=? AND org_id=?`).run(now,id,user.org_id);
+      this.inspectionEvent(user,id,'Acompanhamento limpo',`Edições de acompanhamento removidas por ${user.name}. Vistoria voltou ao estado Nova para novo preenchimento.`);
+      return this.inspectionDetail(user,id);
+    });
+  }
+  deleteInspection(user,id) {
+    this.inspectionAccess(user);
+    const current=this.row('inspections',id,user.org_id);
+    if(user.role!=='admin'&&current.requester_id!==user.id) throw new AppError('Somente a Gestão ou quem solicitou pode excluir esta vistoria.',403);
+    return this.transaction(()=>{
+      this.db.prepare('DELETE FROM inspection_notifications WHERE inspection_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM inspection_events WHERE inspection_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM inspections WHERE id=? AND org_id=?').run(id,user.org_id);
+      return {ok:true,id,protocol:current.protocol};
     });
   }
   contractAccess(user) { if(!['admin','staff'].includes(user.role)) throw new AppError('Esta área exige acesso da equipe.',403); }
