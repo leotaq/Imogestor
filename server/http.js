@@ -11,6 +11,10 @@ const staticFiles={ '/':['index.html','text/html; charset=utf-8'], '/app.js':['a
 function safeUser(user) { return {id:user.id,name:user.name,email:user.email,role:user.role}; }
 function samePassword(password,stored) { const [salt,hex]=stored.split(':'); const candidate=scryptSync(password,salt,64);return timingSafeEqual(candidate,Buffer.from(hex,'hex')); }
 async function body(req) {
+  if(req.body&&typeof req.body==='object'&&!Array.isArray(req.body)) return req.body;
+  if(typeof req.body==='string') {
+    try { const data=JSON.parse(req.body); if(data&&typeof data==='object'&&!Array.isArray(data)) return data; } catch {}
+  }
   if(!req.headers['content-type']?.startsWith('application/json')) throw new AppError('Formato de envio inválido.',415);
   let bytes=0;const chunks=[];
   for await(const chunk of req) { bytes+=chunk.length;if(bytes>8*1024*1024) throw new AppError('Envio muito grande. Máximo 5 MB por arquivo.',413); chunks.push(chunk); }
