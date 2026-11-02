@@ -17,26 +17,27 @@ async function body(req) {
   try { const data=JSON.parse(Buffer.concat(chunks).toString('utf8'));if(!data||typeof data!=='object'||Array.isArray(data)) throw new Error();return data; } catch { throw new AppError('Dados de envio inválidos.'); }
 }
 
-export function createApp({db,uploadsDir}) {
+export function createHandler({db,uploadsDir}) {
   const service=new Service(db), attempts=new Map();
-  const server=createServer(async(req,res)=>{
+  return async(req,res)=>{
     res.setHeader('X-Content-Type-Options','nosniff');
     res.setHeader('Referrer-Policy','no-referrer');
     res.setHeader('Cache-Control','no-store');
-    res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+    res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
     const json=(data,status=200)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
     try {
       const host=req.headers.host||'';
-      if(!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) throw new AppError('Este ambiente aceita apenas acesso local.',403);
-      const url=new URL(req.url,`http://${host}`),pathname=url.pathname;
+      if(!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) && !process.env.VERCEL && !host.includes('vercel.app')) throw new AppError('Este ambiente aceita apenas acesso local.',403);
+      const proto=req.headers['x-forwarded-proto']||(req.socket?.encrypted?'https':'http');
+      const url=new URL(req.url,`${proto}://${host}`),pathname=url.pathname;
       if(req.method==='GET'&&staticFiles[pathname]) {
         const [file,type]=staticFiles[pathname];res.writeHead(200,{'Content-Type':type});res.end(await readFile(join(publicDir,file)));return;
       }
-      if(req.method==='GET'&&pathname==='/api/health') {json({ok:true,mode:'local-demo'});return;}
+      if(req.method==='GET'&&pathname==='/api/health') {json({ok:true,mode:process.env.VERCEL?'vercel':'local-demo'});return;}
       if(!pathname.startsWith('/api/')) throw new AppError('Página não encontrada.',404);
       if(!['GET','HEAD'].includes(req.method)) {
         if(req.headers['x-gestor-request']!=='1') throw new AppError('Requisição não autorizada.',403);
-        if(req.headers.origin&&req.headers.origin!==`http://${host}`) throw new AppError('Origem não autorizada.',403);
+        if(req.headers.origin && req.headers.origin!==`http://${host}` && req.headers.origin!==`https://${host}`) throw new AppError('Origem não autorizada.',403);
       }
       if(req.method==='POST'&&pathname==='/api/login') {
         const input=await body(req),identifier=text(input.identifier??input.email,'Usuário ou e-mail',180).toLowerCase(),password=text(input.password,'Senha',200);
@@ -133,6 +134,11 @@ export function createApp({db,uploadsDir}) {
       if(error instanceof AppError) json({...error.details,error:error.message},error.status);
       else {console.error('Falha interna:',error.message);json({error:'Não foi possível concluir. Os dados anteriores foram preservados.'},500);}
     }
-  });
-  return {server,service};
+  };
+}
+
+export function createApp({db,uploadsDir}) {
+  const handler=createHandler({db,uploadsDir});
+  const server=createServer(handler);
+  return {server};
 }

@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Painel local de vistorias e gestão imobiliária",
-  "engines": { "node": ">=24.0.0 <25" },
+  "engines": { "node": ">=22.0.0" },
   "scripts": {
+    "build": "",
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node --test test/backup.test.js test/http.test.js test/service.test.js",

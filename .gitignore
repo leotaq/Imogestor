@@ -15,14 +15,19 @@ coverage/
 .cache/
 
 # Dados privados de execução; usar exemplos fictícios separados
-/data/
+/data/*
+!/data/gestor.sqlite
 /uploads/
 /backups/
 *.sqlite
+!/data/gestor.sqlite
 *.sqlite3
 *.db
 *.db-wal
 *.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.lock*
 *.log
 
 # Arquivos do sistema
