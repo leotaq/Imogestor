@@ -1,0 +1,29 @@
+{
+  "status": "application-restore-verified",
+  "local_postgres": "17.11",
+  "production_postgres": "17.6",
+  "scope": "oito tabelas public; nao e backup completo do projeto Supabase",
+  "snapshot": "2026-10-20T02:14:53.232082+00:00",
+  "exact_data_comparisons": 3,
+  "old_schema_sql_flow_tested": true,
+  "new_schema_tested_in_copy": true,
+  "website_end_to_end_tested": false,
+  "production_migration_applied": false,
+  "artifacts": [
+    {
+      "sha256": "89849D0E07309D3188E0F63D951D7FD5D699228F11A08456B27C778F79AC3996",
+      "file": "aplicativo.snapshot.json",
+      "bytes": 2111426
+    },
+    {
+      "sha256": "A072E596181BA012D139E87A1E78609F53DC8C6B0CA962E3638AD733F2CE38BB",
+      "file": "aplicativo-restaurar-local.sql",
+      "bytes": 1642420
+    },
+    {
+      "sha256": "9640E05CAF955A7A371677F84ABE7729AAD37D244957D93E7E60A32B4CB0A3DD",
+      "file": "aplicativo.public.dump",
+      "bytes": 264768
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "project": "Gestor Imob",
+  "project_root": "E:\\Novos projetos\\Gestor_imob",
+  "recorded_date": "2026-10-19",
+  "timezone": "America/Sao_Paulo",
+  "scope": "Pesquisa e planejamento; aplicacao ainda nao implementada",
+  "documents": [
+    {
+      "file": "docs/01-inventario-comparativo.md",
+      "source": "C:\\Users\\Leo\\Documents\\Codex\\2026-10-19\\referenced-chatgpt-conversation-this-is-an\\outputs\\01-inventario-comparativo.md",
+      "sha256": "946D67C3B980325D418A18754DF9DCFE08043CCA09BE928385514577DA125588"
+    },
+    {
+      "file": "docs/02-backlog-e-arquitetura.md",
+      "source": "C:\\Users\\Leo\\Documents\\Codex\\2026-10-19\\referenced-chatgpt-conversation-this-is-an\\outputs\\02-backlog-e-arquitetura.md",
+      "sha256": "C02A6571E1E778841EADD363AB5B254B179CAC0D33813B666C25372863532DF7"
+    }
+  ]
+}

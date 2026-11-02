@@ -1,0 +1,32 @@
+{
+  "local_date": "2026-10-19",
+  "environment": "PGlite 0.5.10 em memoria; somente dados ficticios; sem rede de banco",
+  "version": "PostgreSQL 18.6 (PGlite 0.5.10) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+  "sql_sha256": "fe439c352c2f68ce595cbb0b9edb88a5e3d2187ff1070b34b31fd160256470fe",
+  "passed": 17,
+  "checks": [
+    "DDL completo executa em PostgreSQL local",
+    "Definicoes e permissoes das tabelas public de teste permanecem iguais",
+    "Todas as quatro tabelas novas tem RLS ativo",
+    "anon, authenticated e service_role nao recebem acesso ao schema ou tabelas",
+    "Chamado publico declarado aceita s/n e comeca com vinculo pendente",
+    "Contato ausente e rejeitado",
+    "Endereco obrigatorio incompleto e rejeitado",
+    "Vinculo confirmado exige identificador de imovel",
+    "Historico de outra organizacao e rejeitado por FK composta",
+    "Notas novas sao internas por padrao",
+    "Anexo de outra organizacao e rejeitado",
+    "Anexo acima de 10 MiB e rejeitado",
+    "Metadados de anexo valido sao internos por padrao",
+    "Exclusao do imovel no sistema antigo nao e bloqueada e preserva snapshot",
+    "RLS sem policies bloqueia leitura/insercao mesmo se teste conceder grants",
+    "Reaplicar rascunho falha sem modificar schema preexistente",
+    "Falha antes do COMMIT permite reverter toda a criacao"
+  ],
+  "limits": [
+    "Nao reproduz Supabase Auth, Storage, PostgREST ou event triggers gerenciados",
+    "Nao e backup nem restauracao de producao",
+    "Nao valida fluxos do site de vistorias contra uma copia",
+    "Nenhum SQL DDL executado no Supabase remoto"
+  ]
+}

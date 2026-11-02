@@ -1,0 +1,62 @@
+{
+  "local_date": "2026-10-19",
+  "project": "novabase",
+  "migration": {
+    "version": "20261020022640",
+    "name": "gestor_manutencao_base_privada"
+  },
+  "input_sql_sha256": "FE439C352C2F68CE595CBB0B9EDB88A5E3D2187FF1070B34B31FD160256470FE",
+  "production_applied": true,
+  "old_public_fingerprint_before": "3570bd74529fd31a8f63d93801424b79",
+  "old_public_fingerprint_after": "3570bd74529fd31a8f63d93801424b79",
+  "columns_unchanged": true,
+  "functions_unchanged": true,
+  "triggers_unchanged": true,
+  "verification": {
+    "events": 0,
+    "tables": [
+      {
+        "rls": true,
+        "name": "organizations"
+      },
+      {
+        "rls": true,
+        "name": "request_attachments"
+      },
+      {
+        "rls": true,
+        "name": "request_events"
+      },
+      {
+        "rls": true,
+        "name": "requests"
+      }
+    ],
+    "requests": 0,
+    "attachments": 0,
+    "permissions": [
+      {
+        "role": "authenticated",
+        "schema_usage": false,
+        "read_requests": false
+      },
+      {
+        "role": "anon",
+        "schema_usage": false,
+        "read_requests": false
+      },
+      {
+        "role": "service_role",
+        "schema_usage": false,
+        "read_requests": false
+      }
+    ],
+    "external_fks": 0,
+    "organizations": 0
+  },
+  "backup_scope": "oito tabelas public do aplicativo; nao e backup completo do projeto Supabase",
+  "backup_snapshot_utc": "2026-10-20T02:14:53.232082+00:00",
+  "restoration": "PostgreSQL 17.11 local, tres comparacoes integrais de registros iguais",
+  "website_end_to_end_tested": false,
+  "application_connected_to_supabase": false
+}

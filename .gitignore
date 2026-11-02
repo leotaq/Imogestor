@@ -1,0 +1,30 @@
+# Credenciais e configuração local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependências e saídas geradas
+node_modules/
+.local-tools/
+dist/
+build/
+coverage/
+.next/
+.cache/
+
+# Dados privados de execução; usar exemplos fictícios separados
+/data/
+/uploads/
+/backups/
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.log
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db

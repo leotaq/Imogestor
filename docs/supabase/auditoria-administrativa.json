@@ -1,0 +1,2085 @@
+{
+  "observed_local_date": "2026-10-19",
+  "project_ref": "pfakuvnuyixebvtmwmgu",
+  "project_name": "novabase",
+  "preflight": {
+    "role": "postgres",
+    "version": "17.6",
+    "database": "postgres",
+    "policies": [
+      {
+        "cmd": "ALL",
+        "qual": "true",
+        "roles": [
+          "public"
+        ],
+        "tablename": "work_schedules",
+        "permissive": "PERMISSIVE",
+        "policyname": "service role full access",
+        "schemaname": "public",
+        "with_check": "true"
+      }
+    ],
+    "app_roles": [
+      {
+        "name": "authenticated",
+        "bypassrls": false
+      },
+      {
+        "name": "anon",
+        "bypassrls": false
+      },
+      {
+        "name": "service_role",
+        "bypassrls": true
+      }
+    ],
+    "table_grants": [
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "people",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "default_checklist_items",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "__codex_probe",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspections",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "inspection_status_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "properties",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "authenticated",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "work_schedules",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      }
+    ],
+    "public_tables": [
+      {
+        "rls": false,
+        "name": "people",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": false,
+        "name": "inspection_checklist_items",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": false,
+        "name": "default_checklist_items",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": false,
+        "name": "__codex_probe",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": false,
+        "name": "inspections",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": false,
+        "name": "inspection_status_events",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": false,
+        "name": "properties",
+        "owner": "postgres",
+        "force_rls": false
+      },
+      {
+        "rls": true,
+        "name": "work_schedules",
+        "owner": "postgres",
+        "force_rls": false
+      }
+    ],
+    "default_grants": [
+      {
+        "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "type": "r",
+        "owner": "postgres",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "type": "f",
+        "owner": "postgres",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+        "type": "S",
+        "owner": "postgres",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+        "type": "S",
+        "owner": "supabase_admin",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+        "type": "r",
+        "owner": "supabase_admin",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "type": "f",
+        "owner": "supabase_admin",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "type": "r",
+        "owner": "postgres",
+        "schema": "storage"
+      },
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "type": "f",
+        "owner": "postgres",
+        "schema": "storage"
+      },
+      {
+        "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+        "type": "S",
+        "owner": "postgres",
+        "schema": "storage"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+        "type": "r",
+        "owner": "supabase_auth_admin",
+        "schema": "auth"
+      },
+      {
+        "acl": "{postgres=rwU/supabase_auth_admin,dashboard_user=rwU/supabase_auth_admin}",
+        "type": "S",
+        "owner": "supabase_auth_admin",
+        "schema": "auth"
+      },
+      {
+        "acl": "{postgres=X/supabase_auth_admin,dashboard_user=X/supabase_auth_admin}",
+        "type": "f",
+        "owner": "supabase_auth_admin",
+        "schema": "auth"
+      },
+      {
+        "acl": "{postgres=rwU/supabase_admin,dashboard_user=rwU/supabase_admin}",
+        "type": "S",
+        "owner": "supabase_admin",
+        "schema": "realtime"
+      },
+      {
+        "acl": "{postgres=X/supabase_admin,dashboard_user=X/supabase_admin}",
+        "type": "f",
+        "owner": "supabase_admin",
+        "schema": "realtime"
+      },
+      {
+        "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+        "type": "S",
+        "owner": "supabase_admin",
+        "schema": "graphql_public"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+        "type": "r",
+        "owner": "supabase_admin",
+        "schema": "graphql_public"
+      },
+      {
+        "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "type": "f",
+        "owner": "supabase_admin",
+        "schema": "graphql_public"
+      },
+      {
+        "acl": "{postgres=a*r*w*d*D*x*t*m*/supabase_admin}",
+        "type": "r",
+        "owner": "supabase_admin",
+        "schema": "extensions"
+      },
+      {
+        "acl": "{postgres=X*/supabase_admin}",
+        "type": "f",
+        "owner": "supabase_admin",
+        "schema": "extensions"
+      },
+      {
+        "acl": "{postgres=r*w*U*/supabase_admin}",
+        "type": "S",
+        "owner": "supabase_admin",
+        "schema": "extensions"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+        "type": "r",
+        "owner": "supabase_admin",
+        "schema": "graphql"
+      },
+      {
+        "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "type": "f",
+        "owner": "supabase_admin",
+        "schema": "graphql"
+      },
+      {
+        "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+        "type": "S",
+        "owner": "supabase_admin",
+        "schema": "graphql"
+      },
+      {
+        "acl": "{postgres=a*r*wdDxtm/supabase_admin,dashboard_user=arwdDxtm/supabase_admin}",
+        "type": "r",
+        "owner": "supabase_admin",
+        "schema": "realtime"
+      }
+    ],
+    "event_triggers": [
+      {
+        "name": "issue_pg_graphql_access",
+        "event": "ddl_command_end",
+        "enabled": "O",
+        "function": "grant_pg_graphql_access()"
+      },
+      {
+        "name": "issue_graphql_placeholder",
+        "event": "sql_drop",
+        "enabled": "O",
+        "function": "set_graphql_placeholder()"
+      },
+      {
+        "name": "pgrst_ddl_watch",
+        "event": "ddl_command_end",
+        "enabled": "O",
+        "function": "pgrst_ddl_watch()"
+      },
+      {
+        "name": "pgrst_drop_watch",
+        "event": "sql_drop",
+        "enabled": "O",
+        "function": "pgrst_drop_watch()"
+      },
+      {
+        "name": "issue_pg_cron_access",
+        "event": "ddl_command_end",
+        "enabled": "O",
+        "function": "grant_pg_cron_access()"
+      },
+      {
+        "name": "issue_pg_net_access",
+        "event": "ddl_command_end",
+        "enabled": "O",
+        "function": "grant_pg_net_access()"
+      }
+    ],
+    "uuid_generator": "gen_random_uuid()",
+    "target_schema_exists": false,
+    "exposed_schema_setting": null
+  },
+  "branches": [],
+  "advisors": {
+    "lints": [
+      {
+        "name": "function_search_path_mutable",
+        "title": "Function Search Path Mutable",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects functions where the search_path parameter is not set.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+        "count": 1,
+        "findings": [
+          {
+            "detail": "Function \\`public.set_updated_at\\` has a role mutable search_path",
+            "metadata": {
+              "name": "set_updated_at",
+              "type": "function",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          }
+        ]
+      },
+      {
+        "name": "rls_disabled_in_public",
+        "title": "RLS Disabled in Public",
+        "level": "ERROR",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects cases where row level security (RLS) has not been enabled on tables in schemas exposed to PostgREST",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0013_rls_disabled_in_public",
+        "count": 7,
+        "findings": [
+          {
+            "detail": "Table \\`public.people\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "people",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          },
+          {
+            "detail": "Table \\`public.inspection_checklist_items\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "inspection_checklist_items",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          },
+          {
+            "detail": "Table \\`public.default_checklist_items\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "default_checklist_items",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          },
+          {
+            "detail": "Table \\`public.__codex_probe\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "__codex_probe",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          },
+          {
+            "detail": "Table \\`public.inspections\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "inspections",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          },
+          {
+            "detail": "Table \\`public.inspection_status_events\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "inspection_status_events",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          },
+          {
+            "detail": "Table \\`public.properties\\` is public, but RLS has not been enabled.",
+            "metadata": {
+              "name": "properties",
+              "type": "table",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          }
+        ]
+      },
+      {
+        "name": "extension_in_public",
+        "title": "Extension in Public",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects extensions installed in the \\`public\\` schema.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public",
+        "count": 1,
+        "findings": [
+          {
+            "detail": "Extension \\`btree_gist\\` is installed in the public schema. Move it to another schema.",
+            "metadata": {
+              "name": "btree_gist",
+              "type": "extension",
+              "schema": "public"
+            },
+            "observed_at": "2026-10-20T01:54:45.844Z"
+          }
+        ]
+      }
+    ]
+  }
+}

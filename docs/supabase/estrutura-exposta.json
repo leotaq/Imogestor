@@ -1,0 +1,631 @@
+{
+  "projectUrl": "https://pfakuvnuyixebvtmwmgu.supabase.co",
+  "observedAt": "2026-10-20T01:32:01.406Z",
+  "mode": "metadata-only-read",
+  "openApiStatus": 200,
+  "tables": [
+    {
+      "name": "__codex_probe",
+      "required": [],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "format": "integer",
+          "primaryKey": false,
+          "foreignKey": null
+        }
+      ]
+    },
+    {
+      "name": "default_checklist_items",
+      "required": [
+        "id",
+        "title",
+        "active",
+        "order_index",
+        "created_at"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": null
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "format": "boolean",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "order_index",
+          "type": "integer",
+          "format": "integer",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        }
+      ]
+    },
+    {
+      "name": "inspection_checklist_items",
+      "required": [
+        "id",
+        "inspection_id",
+        "title",
+        "completed",
+        "created_at"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": null
+        },
+        {
+          "name": "inspection_id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "inspections",
+            "column": "id"
+          }
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "completed",
+          "type": "boolean",
+          "format": "boolean",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "completed_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "completed_by",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "created_by",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "inspection_status_events",
+      "required": [
+        "id",
+        "inspection_id",
+        "to_status",
+        "changed_at"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": null
+        },
+        {
+          "name": "inspection_id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "inspections",
+            "column": "id"
+          }
+        },
+        {
+          "name": "from_status",
+          "type": "string",
+          "format": "public.inspection_status",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "to_status",
+          "type": "string",
+          "format": "public.inspection_status",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "changed_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "changed_by",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "inspections",
+      "required": [
+        "id",
+        "created_at",
+        "created_by",
+        "type",
+        "status",
+        "property_code",
+        "property_address",
+        "updated_at"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": null
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "created_by",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        },
+        {
+          "name": "assigned_to",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "format": "public.inspection_type",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "format": "public.inspection_status",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_code",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_address",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "contract_date",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "scheduled_start",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "duration_minutes",
+          "type": "integer",
+          "format": "integer",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "scheduled_end",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "received_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "completed_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_street",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_number",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_complement",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_neighborhood",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_city",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "assigned_to_marketing",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": false,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "people",
+      "required": [
+        "id",
+        "name",
+        "role",
+        "active",
+        "created_at"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "format": "boolean",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        }
+      ]
+    },
+    {
+      "name": "properties",
+      "required": [
+        "id",
+        "code",
+        "code_normalized",
+        "address",
+        "created_at",
+        "updated_at"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": null
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "code_normalized",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_street",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_number",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_complement",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_neighborhood",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "property_city",
+          "type": "string",
+          "format": "text",
+          "primaryKey": false,
+          "foreignKey": null
+        }
+      ]
+    },
+    {
+      "name": "work_schedules",
+      "required": [
+        "person_id",
+        "work_start",
+        "work_start_min",
+        "lunch_start",
+        "lunch_start_min",
+        "lunch_end",
+        "lunch_end_min",
+        "work_end",
+        "work_end_min",
+        "updated_at"
+      ],
+      "columns": [
+        {
+          "name": "person_id",
+          "type": "string",
+          "format": "uuid",
+          "primaryKey": true,
+          "foreignKey": {
+            "table": "people",
+            "column": "id"
+          }
+        },
+        {
+          "name": "work_start",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "work_start_min",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "lunch_start",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "lunch_start_min",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "lunch_end",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "lunch_end_min",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "work_end",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "work_end_min",
+          "type": "integer",
+          "format": "smallint",
+          "primaryKey": false,
+          "foreignKey": null
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "format": "timestamp with time zone",
+          "primaryKey": false,
+          "foreignKey": null
+        }
+      ]
+    }
+  ],
+  "tableCounts": [
+    {
+      "table": "properties",
+      "status": 200,
+      "contentRange": "0-403/404",
+      "countMode": "estimated"
+    }
+  ],
+  "rpcNames": [],
+  "limitations": [
+    "Apenas esquema exposto pela Data API; não é inventário completo do PostgreSQL.",
+    "Nenhuma linha com dados pessoais foi baixada.",
+    "RLS, grants, gatilhos e unicidade não foram auditados.",
+    "Nenhuma função RPC foi invocada e nenhuma escrita foi executada."
+  ]
+}

@@ -1,0 +1,298 @@
+{
+  "date": "2026-10-19",
+  "scope": "Metadados; nao e backup do banco",
+  "indexes": [
+    {
+      "indexdef": "CREATE UNIQUE INDEX people_pkey ON public.people USING btree (id)",
+      "indexname": "people_pkey",
+      "tablename": "people",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX inspection_checklist_items_pkey ON public.inspection_checklist_items USING btree (id)",
+      "indexname": "inspection_checklist_items_pkey",
+      "tablename": "inspection_checklist_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspection_checklist_items_inspection_id_idx ON public.inspection_checklist_items USING btree (inspection_id)",
+      "indexname": "inspection_checklist_items_inspection_id_idx",
+      "tablename": "inspection_checklist_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspection_checklist_items_completed_idx ON public.inspection_checklist_items USING btree (inspection_id, completed)",
+      "indexname": "inspection_checklist_items_completed_idx",
+      "tablename": "inspection_checklist_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX default_checklist_items_pkey ON public.default_checklist_items USING btree (id)",
+      "indexname": "default_checklist_items_pkey",
+      "tablename": "default_checklist_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX default_checklist_items_active_order_idx ON public.default_checklist_items USING btree (active, order_index, created_at)",
+      "indexname": "default_checklist_items_active_order_idx",
+      "tablename": "default_checklist_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX inspections_pkey ON public.inspections USING btree (id)",
+      "indexname": "inspections_pkey",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_assigned_to_scheduled_start_idx ON public.inspections USING btree (assigned_to, scheduled_start)",
+      "indexname": "inspections_assigned_to_scheduled_start_idx",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_status_idx ON public.inspections USING btree (status)",
+      "indexname": "inspections_status_idx",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_created_at_idx ON public.inspections USING btree (created_at)",
+      "indexname": "inspections_created_at_idx",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_no_overlap_per_inspector ON public.inspections USING gist (assigned_to, tstzrange(scheduled_start, scheduled_end, '[)'::text)) WHERE ((status <> 'canceled'::inspection_status) AND (scheduled_start IS NOT NULL) AND (scheduled_end IS NOT NULL))",
+      "indexname": "inspections_no_overlap_per_inspector",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_metrics_idx ON public.inspections USING btree (created_at, type, status, property_city, created_by, assigned_to)",
+      "indexname": "inspections_metrics_idx",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_assigned_to_marketing_idx ON public.inspections USING btree (assigned_to_marketing)",
+      "indexname": "inspections_assigned_to_marketing_idx",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspections_unassigned_idx ON public.inspections USING btree (created_at DESC) WHERE ((assigned_to IS NULL) AND (status = 'new'::inspection_status))",
+      "indexname": "inspections_unassigned_idx",
+      "tablename": "inspections",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX inspection_status_events_pkey ON public.inspection_status_events USING btree (id)",
+      "indexname": "inspection_status_events_pkey",
+      "tablename": "inspection_status_events",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX inspection_status_events_metrics_idx ON public.inspection_status_events USING btree (changed_at, to_status, inspection_id)",
+      "indexname": "inspection_status_events_metrics_idx",
+      "tablename": "inspection_status_events",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX properties_pkey ON public.properties USING btree (id)",
+      "indexname": "properties_pkey",
+      "tablename": "properties",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX properties_code_normalized_unique ON public.properties USING btree (code_normalized)",
+      "indexname": "properties_code_normalized_unique",
+      "tablename": "properties",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX properties_code_normalized_idx ON public.properties USING btree (code_normalized)",
+      "indexname": "properties_code_normalized_idx",
+      "tablename": "properties",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX work_schedules_pkey ON public.work_schedules USING btree (person_id)",
+      "indexname": "work_schedules_pkey",
+      "tablename": "work_schedules",
+      "schemaname": "public",
+      "tablespace": null
+    }
+  ],
+  "triggers": [
+    {
+      "name": "trg_inspections_updated_at",
+      "table": "inspections",
+      "definition": "CREATE TRIGGER trg_inspections_updated_at BEFORE UPDATE ON public.inspections FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+    },
+    {
+      "name": "trg_properties_updated_at",
+      "table": "properties",
+      "definition": "CREATE TRIGGER trg_properties_updated_at BEFORE UPDATE ON public.properties FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+    }
+  ],
+  "constraints": [
+    {
+      "name": "people_phone_check",
+      "type": "c",
+      "table": "people",
+      "definition": "CHECK (((phone IS NULL) OR (phone ~ '^[+]?[0-9]{10,15}$'::text)))"
+    },
+    {
+      "name": "people_pkey",
+      "type": "p",
+      "table": "people",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "people_role_check",
+      "type": "c",
+      "table": "people",
+      "definition": "CHECK ((role = ANY (ARRAY['manager'::text, 'inspector'::text, 'attendant'::text, 'marketing'::text, 'scheduler'::text, 'assistant'::text])))"
+    },
+    {
+      "name": "inspection_checklist_items_completed_by_fkey",
+      "type": "f",
+      "table": "inspection_checklist_items",
+      "definition": "FOREIGN KEY (completed_by) REFERENCES people(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "inspection_checklist_items_created_by_fkey",
+      "type": "f",
+      "table": "inspection_checklist_items",
+      "definition": "FOREIGN KEY (created_by) REFERENCES people(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "inspection_checklist_items_inspection_id_fkey",
+      "type": "f",
+      "table": "inspection_checklist_items",
+      "definition": "FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "inspection_checklist_items_pkey",
+      "type": "p",
+      "table": "inspection_checklist_items",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "default_checklist_items_pkey",
+      "type": "p",
+      "table": "default_checklist_items",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "inspections_assigned_to_fkey",
+      "type": "f",
+      "table": "inspections",
+      "definition": "FOREIGN KEY (assigned_to) REFERENCES people(id)"
+    },
+    {
+      "name": "inspections_assigned_to_marketing_fkey",
+      "type": "f",
+      "table": "inspections",
+      "definition": "FOREIGN KEY (assigned_to_marketing) REFERENCES people(id)"
+    },
+    {
+      "name": "inspections_created_by_fkey",
+      "type": "f",
+      "table": "inspections",
+      "definition": "FOREIGN KEY (created_by) REFERENCES people(id)"
+    },
+    {
+      "name": "inspections_no_overlap_per_inspector",
+      "type": "x",
+      "table": "inspections",
+      "definition": "EXCLUDE USING gist (assigned_to WITH =, tstzrange(scheduled_start, scheduled_end, '[)'::text) WITH &&) WHERE (((status <> 'canceled'::inspection_status) AND (scheduled_start IS NOT NULL) AND (scheduled_end IS NOT NULL)))"
+    },
+    {
+      "name": "inspections_pkey",
+      "type": "p",
+      "table": "inspections",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "inspections_property_city_check",
+      "type": "c",
+      "table": "inspections",
+      "definition": "CHECK (((property_city IS NULL) OR (property_city = ANY (ARRAY['Taquara'::text, 'Parobé'::text, 'Igrejinha'::text]))))"
+    },
+    {
+      "name": "inspections_schedule_valid",
+      "type": "c",
+      "table": "inspections",
+      "definition": "CHECK ((((scheduled_start IS NULL) AND (scheduled_end IS NULL) AND (duration_minutes IS NULL)) OR ((scheduled_start IS NOT NULL) AND (scheduled_end IS NOT NULL) AND (duration_minutes IS NOT NULL) AND (duration_minutes > 0) AND (scheduled_end > scheduled_start))))"
+    },
+    {
+      "name": "inspection_status_events_changed_by_fkey",
+      "type": "f",
+      "table": "inspection_status_events",
+      "definition": "FOREIGN KEY (changed_by) REFERENCES people(id)"
+    },
+    {
+      "name": "inspection_status_events_inspection_id_fkey",
+      "type": "f",
+      "table": "inspection_status_events",
+      "definition": "FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "inspection_status_events_pkey",
+      "type": "p",
+      "table": "inspection_status_events",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "properties_code_normalized_unique",
+      "type": "u",
+      "table": "properties",
+      "definition": "UNIQUE (code_normalized)"
+    },
+    {
+      "name": "properties_pkey",
+      "type": "p",
+      "table": "properties",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "properties_property_city_check",
+      "type": "c",
+      "table": "properties",
+      "definition": "CHECK (((property_city IS NULL) OR (property_city = ANY (ARRAY['Taquara'::text, 'Parobé'::text, 'Igrejinha'::text]))))"
+    },
+    {
+      "name": "work_schedules_person_id_fkey",
+      "type": "f",
+      "table": "work_schedules",
+      "definition": "FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "work_schedules_pkey",
+      "type": "p",
+      "table": "work_schedules",
+      "definition": "PRIMARY KEY (person_id)"
+    }
+  ]
+}
