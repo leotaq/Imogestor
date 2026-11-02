@@ -233,7 +233,12 @@ export class Service {
 
     const id=randomUUID(),now=new Date().toISOString();
     return this.transaction(()=>{
-      const appointment=scheduled?this.validateAppointment(user,inspectorId,scheduled,input.duration_minutes):{start:'',end:'',duration:0};
+      let durationInput=Number(input.duration_minutes);
+      if(!durationInput&&scheduled){
+        const last=this.db.prepare("SELECT duration_minutes FROM inspections WHERE org_id=? AND property_id=? AND kind=? AND duration_minutes>0 AND status NOT IN ('cancelled','no_contract') ORDER BY updated_at DESC LIMIT 1").get(user.org_id,property.id,kind);
+        durationInput=last?.duration_minutes||60;
+      }
+      const appointment=scheduled?this.validateAppointment(user,inspectorId,scheduled,durationInput):{start:'',end:'',duration:0};
       const number=this.db.prepare('SELECT COUNT(*) n FROM inspections WHERE org_id=?').get(user.org_id).n;
       const protocol=`VST-${String(number+1).padStart(4,'0')}`;
       this.db.prepare(`INSERT INTO inspections(id,org_id,protocol,property_id,property_code_snapshot,address_snapshot,kind,requester_id,inspector_id,status,deadline_at,scheduled_at,scheduled_end,duration_minutes,contract_id,created_at,updated_at)
@@ -266,7 +271,18 @@ export class Service {
     const inspectorId=input.inspector_id||null;
     const scheduled=input.scheduled_at?dateTime(input.scheduled_at):'';
     if(Boolean(inspectorId)!==Boolean(scheduled)) throw new AppError('Informe o vistoriador e a data da vistoria juntos.');
-    const duration=scheduled?Number(input.duration_minutes??current.duration_minutes):0;
+    let duration=Number(input.duration_minutes);
+    if(!duration&&scheduled){
+      if(current.duration_minutes>0){
+        duration=current.duration_minutes;
+      } else {
+        const last=this.db.prepare("SELECT duration_minutes FROM inspections WHERE org_id=? AND property_id=? AND kind=? AND duration_minutes>0 AND status NOT IN ('cancelled','no_contract') ORDER BY updated_at DESC LIMIT 1").get(user.org_id,current.property_id,current.kind);
+        duration=last?.duration_minutes||60;
+      }
+    } else if(!scheduled){
+      duration=0;
+    }
+    const deadline=input.deadline_at!==undefined?(input.deadline_at?input.deadline_at.slice(0,10):''):current.deadline_at;
     const appointmentChanged=inspectorId!==current.inspector_id||scheduled!==current.scheduled_at||duration!==current.duration_minutes;
     if(current.status==='received'&&appointmentChanged&&user.role!=='admin') throw new AppError('Somente a Gestão pode alterar um horário aceito.');
     if(appointmentChanged&&['in_progress','no_contract','completed','finalized','cancelled'].includes(current.status)) throw new AppError('O horário fica bloqueado depois que a vistoria começa ou é encerrada.');
@@ -283,8 +299,8 @@ export class Service {
     return this.transaction(()=>{
       const now=new Date().toISOString();
       const appointment=scheduled?((appointmentChanged||current.status==='new')&&nextStatus!=='cancelled'?this.validateAppointment(user,inspectorId,scheduled,duration,id):{start:scheduled,end:current.scheduled_end||appointmentEnd(scheduled,current.duration_minutes),duration}):{start:'',end:'',duration:0};
-      const result=this.db.prepare(`UPDATE inspections SET inspector_id=?,scheduled_at=?,scheduled_end=?,duration_minutes=?,status=?,reason=?,completion_note=?,contract_id=coalesce(?,contract_id),updated_at=?,revision=revision+1
-        WHERE id=? AND org_id=? AND revision=?`).run(inspectorId,appointment.start,appointment.end,appointment.duration,nextStatus,reason,completion,input.contract_id!==undefined?input.contract_id:null,now,id,user.org_id,input.revision);
+      const result=this.db.prepare(`UPDATE inspections SET inspector_id=?,scheduled_at=?,scheduled_end=?,duration_minutes=?,status=?,reason=?,completion_note=?,contract_id=coalesce(?,contract_id),deadline_at=?,updated_at=?,revision=revision+1
+        WHERE id=? AND org_id=? AND revision=?`).run(inspectorId,appointment.start,appointment.end,appointment.duration,nextStatus,reason,completion,input.contract_id!==undefined?input.contract_id:null,deadline,now,id,user.org_id,input.revision);
       if(!result.changes) throw new AppError('A vistoria mudou. Atualize antes de salvar.',409);
       const changes=[];
       if(nextStatus!==current.status) changes.push(`${inspectionStateNames[current.status]} → ${inspectionStateNames[nextStatus]}`);

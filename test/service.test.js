@@ -143,3 +143,20 @@ test('permite excluir vistoria permanentemente',()=>{
     assert.throws(()=>s.inspectionDetail(admin,insp.id),{status:404});
   }finally{db.close();}
 });
+
+test('puxa duracao da vistoria anterior automaticamente e permite atualizar prazo manualmente',()=>{
+  const {db,service:s,admin,staff}=fixture();try{
+    // Primeira vistoria com 45 minutos aceita pelo vistoriador
+    const insp1=s.createInspection(admin,{property_id:'p1',kind:'occupation',requester_id:admin.id,inspector_id:'rafael',scheduled_at:'2026-12-15T09:00',duration_minutes:45});
+    s.updateInspection(staff,insp1.id,{revision:insp1.revision,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T09:00',duration_minutes:45,reason:'',completion_note:''});
+    
+    // Segunda vistoria do mesmo imóvel/tipo: solicitante só propõe horário, duração é herdada da anterior (45 min)
+    const insp2=s.createInspection(admin,{property_id:'p1',kind:'occupation',requester_id:admin.id,inspector_id:'rafael',scheduled_at:'2026-12-16T09:00'});
+    assert.equal(insp2.duration_minutes,45);
+    assert.equal(insp2.scheduled_end,'2026-12-16T09:45');
+    
+    // Gestora atualiza o prazo manual
+    const updated=s.updateInspection(admin,insp2.id,{revision:insp2.revision,status:insp2.status,inspector_id:insp2.inspector_id,scheduled_at:insp2.scheduled_at,duration_minutes:insp2.duration_minutes,deadline_at:'2026-12-25',reason:'',completion_note:''});
+    assert.equal(updated.deadline_at,'2026-12-25');
+  }finally{db.close();}
+});
