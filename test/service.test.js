@@ -180,3 +180,25 @@ test('permite excluir solicitação de manutenção (chamado) e registros vincul
     assert.throws(()=>s.detail(admin,ticket.id),{status:404});
   }finally{db.close();}
 });
+
+test('gestão pode cadastrar, editar e excluir prestadores',()=>{
+  const {db,service:s,admin,staff}=fixture();try{
+    s.catalogCreate(admin,'providers',{name:'Prestador Teste',specialty:'Serralheria',phone:'51999990000',email:'teste@prestador.com'});
+    const created=db.prepare("SELECT * FROM providers WHERE name='Prestador Teste'").get();
+    assert.equal(created.specialty,'Serralheria');
+    assert.equal(created.active,1);
+
+    assert.throws(()=>s.updateProvider(staff,created.id,{name:'Prestador Atualizado',specialty:'Gesso',phone:'51999991111',email:'gesso@prestador.com',active:0}),{status:403});
+    const updated=s.updateProvider(admin,created.id,{name:'Prestador Atualizado',specialty:'Gesso',phone:'51999991111',email:'gesso@prestador.com',active:0});
+    assert.equal(updated.name,'Prestador Atualizado');
+    assert.equal(updated.specialty,'Gesso');
+    assert.equal(updated.active,0);
+
+    assert.throws(()=>s.deleteProvider(staff,created.id),{status:403});
+    const delRes=s.deleteProvider(admin,created.id);
+    assert.equal(delRes.ok,true);
+    assert.throws(()=>s.row('providers',created.id,admin.org_id),{status:404});
+
+    assert.throws(()=>s.deleteProvider(admin,'v2'),/vinculados/);
+  }finally{db.close();}
+});

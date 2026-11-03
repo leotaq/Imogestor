@@ -82,6 +82,12 @@ export function createHandler({db,uploadsDir}) {
       if(req.method==='POST'&&notificationMatch) {json(service.markNotificationRead(user,notificationMatch[1]));return;}
       const userMatch=pathname.match(/^\/api\/users\/([\w-]+)$/);
       if(userMatch&&req.method==='PATCH') {json(service.updateUser(user,userMatch[1],await body(req)));return;}
+      const providerMatch=pathname.match(/^\/api\/providers\/([\w-]+)$/);
+      if(providerMatch) {
+        if(req.method==='GET') {json(service.row('providers',providerMatch[1],user.org_id));return;}
+        if(req.method==='PATCH') {json(service.updateProvider(user,providerMatch[1],await body(req)));return;}
+        if(req.method==='DELETE') {json(service.deleteProvider(user,providerMatch[1]));return;}
+      }
       if(req.method==='POST'&&['/api/properties','/api/providers'].includes(pathname)) {json(service.catalogCreate(user,pathname.split('/')[2],await body(req)),201);return;}
       if(req.method==='POST'&&pathname==='/api/tickets') {json(service.createTicket(user,await body(req)),201);return;}
       if(req.method==='POST'&&pathname==='/api/inspections') {json(service.createInspection(user,await body(req)),201);return;}

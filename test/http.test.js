@@ -72,3 +72,15 @@ test('endpoint DELETE /api/tickets/:id exclui chamado com sucesso',async t=>{
   const check=await request('/api/tickets/t1',{cookie});
   assert.equal(check.status,404);
 });
+
+test('rotas PATCH e DELETE /api/providers/:id atualizam e removem prestador',async t=>{
+  const {request,login,db}=await appFixture(t);
+  const cookie=await login();
+  await request('/api/providers',{cookie,method:'POST',data:{name:'Prestador HTTP',specialty:'Vidraçaria',phone:'51999992222',email:'vidro@example.com'}});
+  const prov=db.prepare("SELECT * FROM providers WHERE name='Prestador HTTP'").get();
+  assert.ok(prov);
+  const patchRes=await request('/api/providers/'+prov.id,{cookie,method:'PATCH',data:{name:'Vidraçaria Sul',specialty:'Vidros',phone:'51999993333',email:'sul@example.com',active:1}});
+  assert.equal(patchRes.status,200);
+  const delRes=await request('/api/providers/'+prov.id,{cookie,method:'DELETE'});
+  assert.equal(delRes.status,200);
+});

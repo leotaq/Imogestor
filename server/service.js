@@ -597,4 +597,30 @@ export class Service {
     } else throw new AppError('Cadastro inválido.');
     return this.catalogs(user);
   }
+  updateProvider(user,id,input) {
+    this.admin(user);
+    const provider=this.row('providers',id,user.org_id);
+    const name=text(input.name,'Nome do prestador',180);
+    const specialty=text(input.specialty,'Especialidade',180);
+    const phone=text(input.phone||'','Telefone',180,false);
+    const email=text(input.email||'','E-mail',180,false);
+    let active=provider.active;
+    if(input.active!==undefined) {
+      active=['1',1,true].includes(input.active)?1:0;
+    }
+    this.db.prepare('UPDATE providers SET name=?,specialty=?,phone=?,email=?,active=? WHERE id=? AND org_id=?')
+      .run(name,specialty,phone,email,active,id,user.org_id);
+    return this.row('providers',id,user.org_id);
+  }
+  deleteProvider(user,id) {
+    this.admin(user);
+    const provider=this.row('providers',id,user.org_id);
+    const ordersCount=this.db.prepare('SELECT COUNT(*) n FROM orders WHERE provider_id=? AND org_id=?').get(id,user.org_id).n;
+    const quotesCount=this.db.prepare('SELECT COUNT(*) n FROM quotes WHERE provider_id=? AND org_id=?').get(id,user.org_id).n;
+    if(ordersCount>0||quotesCount>0) {
+      throw new AppError(`Este prestador possui ${ordersCount?`${ordersCount} ordem(ns) de serviço`:''}${ordersCount&&quotesCount?' e ':''}${quotesCount?`${quotesCount} orçamento(s)`:''} vinculados. Para não perder os registros históricos, altere a situação para Inativo em Editar.`);
+    }
+    this.db.prepare('DELETE FROM providers WHERE id=? AND org_id=?').run(id,user.org_id);
+    return {ok:true,id,name:provider.name};
+  }
 }
