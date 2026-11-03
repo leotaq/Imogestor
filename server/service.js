@@ -31,7 +31,7 @@ function userInput(input,updating=false,currentJobTitle='') {
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new AppError('Informe um e-mail válido.');
   const role=pick(input.role,['admin','staff','finance'],'Função'),password=text(input.password||'','Senha',200,!updating);
   const job_title=text(input.job_title??currentJobTitle,'Cargo / nomenclatura',80,false);
-  if(password&&password.length<8) throw new AppError('A senha deve ter pelo menos 8 caracteres.');
+  if(password&&password.length<4) throw new AppError('A senha deve ter pelo menos 4 caracteres.');
   let active=1;
   if(updating) {
     if(['1',1,true].includes(input.active)) active=1;

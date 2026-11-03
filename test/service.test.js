@@ -160,3 +160,11 @@ test('puxa duracao da vistoria anterior automaticamente e permite atualizar praz
     assert.equal(updated.deadline_at,'2026-12-25');
   }finally{db.close();}
 });
+
+test('validação de senha aceita no mínimo 4 caracteres e rejeita menores',()=>{
+  const {db,service:s,admin}=fixture();try{
+    assert.throws(()=>s.createUser(admin,{name:'Teste Curto',username:'curto',role:'staff',password:'123'}),/A senha deve ter pelo menos 4 caracteres\./);
+    const u=s.createUser(admin,{name:'Teste Valido',username:'valido',role:'staff',password:'1234'});
+    assert.equal(u.username,'valido');
+  }finally{db.close();}
+});
