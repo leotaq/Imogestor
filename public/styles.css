@@ -238,3 +238,11 @@ label{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:500;
 .sidebar::-webkit-scrollbar{width:5px}.sidebar::-webkit-scrollbar-track{background:transparent}.sidebar::-webkit-scrollbar-thumb{background:#ffffff33;border-radius:4px}.sidebar::-webkit-scrollbar-thumb:hover{background:#ffffff55}
 
 .sidebar>.brand{margin-bottom:24px}
+
+#confirm-modal{width:460px;max-width:calc(100vw - 32px);border-radius:14px;overflow:hidden}
+#confirm-modal .confirm-body{padding:22px 26px}
+#confirm-modal .confirm-title{font-size:15px;font-weight:600;margin:0 0 10px;color:var(--ink);line-height:1.4}
+#confirm-modal .confirm-text{font-size:12px;line-height:1.6;color:#758a79;margin:0}
+#confirm-modal .confirm-footer{display:flex;justify-content:flex-end;gap:10px;padding:15px 26px;background:#fbfdf9;border-top:1px solid var(--line)}
+:root[data-theme="dark"] #confirm-modal .confirm-footer{background:#181c20;border-top-color:var(--line)}
+:root[data-theme="dark"] #confirm-modal .confirm-text{color:#9aa99c}

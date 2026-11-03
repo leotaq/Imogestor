@@ -168,3 +168,15 @@ test('validação de senha aceita no mínimo 4 caracteres e rejeita menores',()=
     assert.equal(u.username,'valido');
   }finally{db.close();}
 });
+
+test('permite excluir solicitação de manutenção (chamado) e registros vinculados',()=>{
+  const {db,service:s,admin,staff}=fixture();try{
+    const finance=db.prepare("SELECT * FROM users WHERE id='bia'").get();
+    const ticket=s.createTicket(admin,{property_id:'p1',title:'Torneira vazando',description:'Vazamento na cozinha',requester:'Morador',contact:'1199999999',category:'Hidráulica',priority:'normal',source:'WhatsApp',due_date:'2026-12-20'});
+    s.note(staff,ticket.id,{audience:'internal',body:'Nota de teste'});
+    assert.throws(()=>s.deleteTicket(finance,ticket.id),{status:403});
+    const res=s.deleteTicket(admin,ticket.id);
+    assert.equal(res.ok,true);
+    assert.throws(()=>s.detail(admin,ticket.id),{status:404});
+  }finally{db.close();}
+});

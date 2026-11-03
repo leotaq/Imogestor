@@ -110,6 +110,16 @@ export function createHandler({db,uploadsDir}) {
       const [,id,action,childId]=match;
       service.row('tickets',id,user.org_id);
       if(req.method==='GET'&&!action) {json(service.detail(user,id));return;}
+      if(req.method==='DELETE'&&!action) {
+        const result=service.deleteTicket(user,id);
+        if(result.storageNames?.length) {
+          for(const name of result.storageNames) {
+            try { await unlink(join(uploadsDir,name)); } catch {}
+          }
+        }
+        json({ok:true,id,protocol:result.protocol});
+        return;
+      }
       const input=await body(req);
       if(req.method==='PATCH'&&!action) {json(service.updateTicket(user,id,input));return;}
       if(req.method==='POST') {

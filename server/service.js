@@ -424,6 +424,21 @@ export class Service {
       return this.contractRecord(user,id);
     });
   }
+  deleteTicket(user,id) {
+    if(user.role==='finance') throw new AppError('Financeiro não tem permissão para excluir chamados.',403);
+    const ticket=this.row('tickets',id,user.org_id);
+    const storageNames=this.db.prepare('SELECT storage_name FROM attachments WHERE ticket_id=? AND org_id=?').all(id,user.org_id).map(a=>a.storage_name);
+    return this.transaction(()=>{
+      this.db.prepare('DELETE FROM attachments WHERE ticket_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM costs WHERE ticket_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM orders WHERE ticket_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM quotes WHERE ticket_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM notes WHERE ticket_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM events WHERE ticket_id=? AND org_id=?').run(id,user.org_id);
+      this.db.prepare('DELETE FROM tickets WHERE id=? AND org_id=?').run(id,user.org_id);
+      return {ok:true,id,protocol:ticket.protocol,storageNames};
+    });
+  }
   createTicket(user,input) {
     const p=this.row('properties',input.property_id,user.org_id);
     if(p.active!==1) throw new AppError('Este imóvel está arquivado e não aceita novos chamados.');

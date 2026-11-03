@@ -61,3 +61,14 @@ test('CSV neutraliza fórmulas em conteúdo informado pelo usuário',async t=>{
   db.prepare('UPDATE tickets SET title=? WHERE id=?').run('=HYPERLINK("https://example.com")','t1');
   const report=await request('/api/export',{cookie});assert.ok((await report.text()).includes("'="));
 });
+
+test('endpoint DELETE /api/tickets/:id exclui chamado com sucesso',async t=>{
+  const {request,login}=await appFixture(t);
+  const cookie=await login();
+  const res=await request('/api/tickets/t1',{cookie,method:'DELETE'});
+  assert.equal(res.status,200);
+  const json=await res.json();
+  assert.equal(json.ok,true);
+  const check=await request('/api/tickets/t1',{cookie});
+  assert.equal(check.status,404);
+});
