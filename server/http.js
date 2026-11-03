@@ -35,7 +35,7 @@ export function createHandler({db,uploadsDir}) {
       const proto=req.headers['x-forwarded-proto']||(req.socket?.encrypted?'https':'http');
       const url=new URL(req.url,`${proto}://${host}`),pathname=url.pathname;
       if(req.method==='GET'&&staticFiles[pathname]) {
-        const [file,type]=staticFiles[pathname];res.writeHead(200,{'Content-Type':type});res.end(await readFile(join(publicDir,file)));return;
+        const [file,type]=staticFiles[pathname];res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-cache, no-store, must-revalidate','Pragma':'no-cache','Expires':'0'});res.end(await readFile(join(publicDir,file)));return;
       }
       if(req.method==='GET'&&pathname==='/api/health') {json({ok:true,mode:process.env.VERCEL?'vercel':'local-demo'});return;}
       if(!pathname.startsWith('/api/')) throw new AppError('Página não encontrada.',404);
