@@ -45,7 +45,7 @@ const canUseContracts=()=>['admin','staff'].includes(state.user.role);
 const canFinance=()=>['admin','finance'].includes(state.user.role);
 const userRoleNames={admin:'Gestão',staff:'Atendimento',finance:'Financeiro'};
 const userTitleNames={'':'A definir',gestora:'Gestora',gerente:'Gerente',atendente:'Atendente',assistente:'Assistente',vistoriador:'Vistoriador'};
-let state=null,page=location.hash.slice(1)||'inspections',filters={},detail=null,detailTab='summary',inspectionDetail=null,contractDetail=null,inspectionView='kanban',inspectionMonth=today().slice(0,7),toastTimer,pendingInspectionDraft=null,pendingContractDraft=null,knownNotificationIds=new Set();
+let state=null,page=location.hash.slice(1)||'inspections',filters={},detail=null,detailTab='summary',inspectionDetail=null,contractDetail=null,inspectionView='kanban',inspectionMonth=today().slice(0,7),toastTimer,pendingInspectionDraft=null,pendingContractDraft=null,knownNotificationIds=new Set(),propertyDetail=null,propertyTab='all';
 const pages={inspections:['Vistorias','Pedidos, responsáveis e próximas visitas.'],contracts:['Contratos','Solicitações, prazos e envio para a gestora.'],overview:['Visão geral','Uma visão clara da sua operação.'],tickets:['Manutenções','Do primeiro chamado à solução.'],properties:['Imóveis','Sua carteira, com o histórico sempre por perto.'],providers:['Prestadores','Quem cuida dos imóveis junto com você.'],agenda:['Agenda','Propostas, horários aceitos e prazos.'],notifications:['Avisos','Vistorias concluídas e contratos enviados à gestora.'],reports:['Relatórios','Entenda prazos, custos e pendências.']};
 const contractKindNames={occupation:'Ocupação',addendum:'Aditivo',other:'Outro motivo'};
 const contractStatusNames={requested:'Solicitado',in_progress:'Em confecção',sent_to_manager:'Enviado à gestora'};
@@ -191,6 +191,63 @@ function contractDelayEditor(){
   const c=contractDetail;if(!c)return;
   editor('Justificar atraso',`<p class="form-intro">A justificativa ficará no histórico e visível junto ao prazo do contrato.</p><label>Motivo do atraso<textarea name="reason" rows="4" required maxlength="1000" placeholder="Explique por que o prazo não será cumprido.">${h(c.delay_reason)}</textarea></label>`,'contract-delay','Registrar justificativa');
 }
+
+  function openProperty(id){
+    const p=state.properties.find(x=>x.id===id);
+    if(!p){toast('Imóvel não encontrado.',true);return;}
+    propertyDetail=p;propertyTab='all';
+    renderPropertyDetail();
+    if(!$('#details').open)$('#details').showModal();
+  }
+  function renderPropertyDetail(){
+    const p=propertyDetail;if(!p)return;
+    const code=p.code||'';
+    const address=p.property_street?[p.property_street,p.property_number,p.property_neighborhood,p.property_city,p.property_complement].filter(Boolean).join(' • '):p.address;
+
+    const pInspections=(state.inspections||[]).filter(i=>i.property_id===p.id||(code&&(i.property_code===code||i.property_code_snapshot===code))).sort((a,b)=>(b.scheduled_at||b.created_at||'').localeCompare(a.scheduled_at||a.created_at||''));
+    const pTickets=(state.tickets||[]).filter(t=>t.property_id===p.id||(code&&t.property_code===code)).sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+    const pContracts=(state.contracts||[]).filter(c=>c.property_id===p.id||(code&&c.property_code_snapshot===code)).sort((a,b)=>(b.requested_at||'').localeCompare(a.requested_at||''));
+
+    const events=[];
+    for(const i of pInspections){
+      events.push({
+        type:'inspection',
+        date:i.scheduled_at||i.created_at,
+        title:`Vistoria de ${h(inspectionKindNames[i.kind]||i.kind)}${i.protocol?` · ${h(inspectionDisplayProtocol(i.protocol))}`:''}`,
+        badge:inspectionBadge(i.status),
+        desc:`${i.inspector_name?`Vistoriador: ${h(i.inspector_name)} · `:''}${i.scheduled_at?`Agendada para ${h(stamp(i.scheduled_at))}`:`Registrada em ${h(stamp(i.created_at))}`}${i.completion_note?` · Conclusão: "${h(i.completion_note)}"`:''}`,
+        actionAttr:`data-action="open-linked-inspection" data-id="${h(i.id)}"`,
+        actionText:'Ver vistoria'
+      });
+    }
+    for(const t of pTickets){
+      events.push({
+        type:'ticket',
+        date:t.created_at,
+        title:`Manutenção: ${h(t.title)}${t.protocol?` · ${h(t.protocol)}`:''}`,
+        badge:`<span class="badge status-${h(t.status)}">${h(stateNames[t.status]||t.status)}</span>`,
+        desc:`Categoria: ${h(t.category)} · Solicitante: ${h(t.requester)} · Prazo: ${h(date(t.due_date))}${t.assignee_name?` · Responsável: ${h(t.assignee_name)}`:''}`,
+        actionAttr:`data-ticket="${h(t.id)}"`,
+        actionText:'Ver chamado'
+      });
+    }
+    for(const c of pContracts){
+      events.push({
+        type:'contract',
+        date:c.requested_at,
+        title:`Contrato de ${h(contractKindNames[c.kind]||c.manual_reason)}`,
+        badge:contractBadge(c),
+        desc:`Solicitante: ${h(c.requester_name)} · Previsão: ${h(date(c.deadline_at))}${c.delay_reason?` · Justificativa: "${h(c.delay_reason)}"`:''}`,
+        actionAttr:`data-action="open-linked-contract" data-id="${h(c.id)}"`,
+        actionText:'Ver contrato'
+      });
+    }
+
+    events.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const filteredEvents=propertyTab==='all'?events:events.filter(e=>e.type===propertyTab);
+
+    $('#details').innerHTML=`<div class="detail-header"><div class="detail-kicker"><span>Código SAMI: ${h(p.code)}</span><span class="badge inspection-completed">${p.active?'Ativo':'Arquivado'}</span></div><button class="icon-btn close-modal" data-action="close-details" aria-label="Fechar histórico">${icon('close')}</button><h2 id="detail-title">${h(p.property_street||p.name)}</h2><p>${icon('building')} ${h(address)}${p.unit?` · ${h(p.unit)}`:''}</p></div><div class="detail-content property-detail"><div class="property-history-actions">${canUseContracts()?`<button type="button" class="btn primary" data-action="property-quick-inspection" data-id="${h(p.id)}">${icon('plus')} Nova vistoria</button>`:''}${canUseContracts()?`<button type="button" class="btn secondary" data-action="property-quick-contract" data-id="${h(p.id)}">${icon('plus')} Solicitar contrato</button>`:''}<button type="button" class="btn secondary" data-action="property-quick-ticket" data-id="${h(p.id)}">${icon('plus')} Novo chamado</button></div><div class="metadata"><div><span>Código SAMI</span><strong>${h(p.code)}</strong></div><div><span>Titular da locação</span><strong>${h(p.tenant||'Não informado')}</strong></div><div><span>Contato</span><strong>${h(p.contact||'Não informado')}</strong></div><div><span>Proprietário</span><strong>${h(p.owner||'Não informado')}</strong></div><div><span>Vistorias registradas</span><strong>${pInspections.length}</strong></div><div><span>Manutenções registradas</span><strong>${pTickets.length}</strong></div></div><div class="tabs property-history-tabs" role="group" aria-label="Filtro de histórico"><button class="tab ${propertyTab==='all'?'active':''}" data-action="property-tab" data-tab="all">Tudo <b>${events.length}</b></button><button class="tab ${propertyTab==='inspection'?'active':''}" data-action="property-tab" data-tab="inspection">Vistorias <b>${pInspections.length}</b></button><button class="tab ${propertyTab==='ticket'?'active':''}" data-action="property-tab" data-tab="ticket">Manutenções <b>${pTickets.length}</b></button><button class="tab ${propertyTab==='contract'?'active':''}" data-action="property-tab" data-tab="contract">Contratos <b>${pContracts.length}</b></button></div>${filteredEvents.length?`<div class="property-history-list">${filteredEvents.map(e=>`<article class="history-event-card"><div class="history-event-info"><span class="history-event-icon">${icon(e.type==='inspection'?'building':e.type==='ticket'?'tool':'file')}</span><div><div class="history-event-title"><h4>${e.title}</h4>${e.badge}</div><p class="history-event-details">${e.desc}</p></div></div><div class="history-event-action"><button type="button" class="btn secondary" ${e.actionAttr}>${e.actionText} ${icon('arrow')}</button></div></article>`).join('')}</div>`:empty('Nenhum registro encontrado','Não há ocorrências desta categoria neste imóvel.')}</div><div class="detail-foot">${icon('clock')} Histórico completo do imóvel</div>`;
+  }
 async function openContract(id){try{contractDetail=await api('/contracts/'+id);renderContractDetail();if(!$('#details').open)$('#details').showModal();}catch(e){toast(e.message,true);}}
 function renderContractDetail(){
   const c=contractDetail;if(!c)return;
@@ -244,9 +301,10 @@ function confirmModal({ title = 'Confirmação', message, detailText = '', confi
   });
 }
 function editor(title,body,form,submit='Salvar'){const d=$('#editor');d.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">GESTOR IMOB</span><h2 id="editor-title">${h(title)}</h2></div><button class="icon-btn" data-action="close-editor" aria-label="Fechar formulário">${icon('close')}</button></div><form data-form="${form}"><div class="editor-body">${body}<p class="form-error" role="alert"></p></div><div class="editor-footer"><button type="button" class="btn secondary" data-action="close-editor">Cancelar</button><button type="submit" class="btn primary">${h(submit)} ${icon('arrow')}</button></div></form>`;if(!d.open)d.showModal();}
-function newTicket(){
-  if(!state.properties.length){toast('Cadastre um imóvel antes de abrir o chamado.',true);if(canManage())newProperty();return;}
-  const p=state.properties[0];editor('Novo chamado',`<p class="form-intro">Registre a demanda. Os próximos passos ficam todos aqui.</p><label>Imóvel / unidade<select name="property_id">${propOptions()}</select></label><div class="form-grid"><label>Nome do solicitante<input name="requester" value="${h(p.tenant||'') }" required maxlength="150"></label><label>Contato<input name="contact" value="${h(p.contact)}" required maxlength="180" placeholder="Telefone ou e-mail"></label></div><label>Qual é o problema?<input name="title" required maxlength="150" placeholder="Ex.: vazamento na pia da cozinha"></label><div class="form-grid"><label>Tipo do problema<select name="category">${state.categories.map(c=>`<option>${h(c)}</option>`).join('')}</select></label><label>Prioridade<select name="priority">${options(priorityNames,'normal')}</select></label></div><label>Descrição<textarea name="description" rows="4" required maxlength="6000" placeholder="O que aconteceu, em qual local e desde quando?"></textarea></label><div class="form-grid"><label>Recebido por<select name="source"><option>WhatsApp</option><option>Telefone</option><option>E-mail</option><option>Presencial</option></select></label><label>Prazo inicial<input name="due_date" type="date" required value="${today()}"></label></div><div class="notice">${icon('file')}<span>Depois de salvar, você pode anexar fotos e documentos no chamado.</span></div>`,'ticket','Criar chamado');
+function newTicket(values={}){
+    if(!state.properties.length){toast('Cadastre um imóvel antes de abrir o chamado.',true);if(canManage())newProperty();return;}
+    const propId=values.property_id||state.properties[0]?.id;
+    const p=state.properties.find(x=>x.id===propId)||state.properties[0];editor('Novo chamado',`<p class="form-intro">Registre a demanda. Os próximos passos ficam todos aqui.</p><label>Imóvel / unidade<select name="property_id">${propOptions(propId)}</select></label><div class="form-grid"><label>Nome do solicitante<input name="requester" value="${h(p.tenant||'') }" required maxlength="150"></label><label>Contato<input name="contact" value="${h(p.contact)}" required maxlength="180" placeholder="Telefone ou e-mail"></label></div><label>Qual é o problema?<input name="title" required maxlength="150" placeholder="Ex.: vazamento na pia da cozinha"></label><div class="form-grid"><label>Tipo do problema<select name="category">${state.categories.map(c=>`<option>${h(c)}</option>`).join('')}</select></label><label>Prioridade<select name="priority">${options(priorityNames,'normal')}</select></label></div><label>Descrição<textarea name="description" rows="4" required maxlength="6000" placeholder="O que aconteceu, em qual local e desde quando?"></textarea></label><div class="form-grid"><label>Recebido por<select name="source"><option>WhatsApp</option><option>Telefone</option><option>E-mail</option><option>Presencial</option></select></label><label>Prazo inicial<input name="due_date" type="date" required value="${today()}"></label></div><div class="notice">${icon('file')}<span>Depois de salvar, você pode anexar fotos e documentos no chamado.</span></div>`,'ticket','Criar chamado');
 }
 function findMatchingContract(propertyId,kind,requesterId){
   if(kind!=='occupation'||!propertyId)return null;
@@ -413,7 +471,12 @@ document.addEventListener('click',async event=>{
     if(a==='metric'){const f=el.dataset.filter;if(['agenda','reports'].includes(f))navigate(f);else navigate('tickets',f==='all'?{}:{[f]:true});}
     if(a==='ticket-tab')navigate('tickets',el.dataset.filter==='all'?{}:{[el.dataset.filter]:true});
     if(a==='clear-filters')navigate('tickets');
-    if(a==='property-tickets')navigate('tickets',{property:el.dataset.id});
+    if(a==='open-property'||a==='property-tickets'||a==='property-history'){openProperty(el.dataset.id);return;}
+      if(a==='property-tab'){propertyTab=el.dataset.tab;renderPropertyDetail();return;}
+      if(a==='property-quick-inspection'){const pid=el.dataset.id;$('#details').close();newInspection({property_id:pid});return;}
+      if(a==='property-quick-contract'){const pid=el.dataset.id;$('#details').close();newContract({property_id:pid});return;}
+      if(a==='property-quick-ticket'){const pid=el.dataset.id;$('#details').close();newTicket({property_id:pid});return;}
+      if(a==='clear-property-filters'){delete filters.property_q;$('#page-content').innerHTML=content();return;}
     if(a==='provider-agenda')navigate('agenda',{provider:el.dataset.id});
     if(a==='new-quote')newQuote();if(a==='decide-quote')decideQuote(el.dataset.id);
     if(a==='new-order')newOrder();if(a==='update-order')updateOrder(el.dataset.id);
@@ -429,7 +492,8 @@ document.addEventListener('change',e=>{
   if(e.target.name==='kind'&&e.target.closest('form')?.dataset.form==='contract'){const input=e.target.form.elements.manual_reason,label=$('#contract-reason-label'),show=e.target.value==='other';label.hidden=!show;input.disabled=!show;input.required=show;}
   if(['kind','quote_id'].includes(e.target.name)&&e.target.closest('form')?.dataset.form==='order')syncOrderFields();
 });
-document.addEventListener('input',e=>{if(e.target.name==='deadline_at'&&e.target.closest('form')?.dataset.form==='inspection')delete e.target.dataset.auto;if(e.target.name==='duration_minutes'&&e.target.closest('form')?.dataset.form==='inspection')e.target.dataset.manual='1';if(e.target.dataset.filter==='q'){filters.q=e.target.value;const rows=filtered();$('#ticket-results').innerHTML=rows.length?table(rows):empty('Nenhum chamado encontrado','Tente buscar outro endereço, titular ou protocolo.');$('.result-count').textContent=`${rows.length} resultado${rows.length===1?'':'s'}`;}});
+document.addEventListener('input',e=>{if(e.target.name==='deadline_at'&&e.target.closest('form')?.dataset.form==='inspection')delete e.target.dataset.auto;if(e.target.name==='duration_minutes'&&e.target.closest('form')?.dataset.form==='inspection')e.target.dataset.manual='1';if(e.target.dataset.filter==='property_q'){filters.property_q=e.target.value;$('#page-content').innerHTML=content();return;}
+  if(e.target.dataset.filter==='q'){filters.q=e.target.value;const rows=filtered();$('#ticket-results').innerHTML=rows.length?table(rows):empty('Nenhum chamado encontrado','Tente buscar outro endereço, titular ou protocolo.');$('.result-count').textContent=`${rows.length} resultado${rows.length===1?'':'s'}`;}});
 document.addEventListener('submit',async event=>{
   const form=event.target.closest('[data-form]');if(!form)return;event.preventDefault();const submit=form.querySelector('[type=submit]');if(submit.disabled)return;
   const err=form.querySelector('.form-error');if(err)err.textContent='';submit.disabled=true;
