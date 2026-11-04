@@ -3,21 +3,21 @@ import { existsSync, copyFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { openDatabase, seedDemo } from '../server/database.js';
 import { createHandler } from '../server/http.js';
-import { syncAllFromSupabase } from '../server/supabase.js';
+import { syncAllFromSupabase, syncPeopleFromSupabase } from '../server/supabase.js';
 
 let appHandler = null;
 let currentDb = null;
-let initialSyncDone = false;
-let initialSyncPromise = null;
+let lastSyncTime = 0;
 
-function ensureSync(db) {
-  if (initialSyncDone) return Promise.resolve();
-  if (!initialSyncPromise) {
-    initialSyncPromise = syncPeopleFromSupabase(db, 'aurora')
-      .catch(err => console.error('[Vercel Supabase Sync Error]:', err.message))
-      .finally(() => { initialSyncDone = true; });
+async function ensureSync(db) {
+  const now = Date.now();
+  if (now - lastSyncTime < 15000) return;
+  lastSyncTime = now;
+  try {
+    await syncAllFromSupabase(db, 'aurora');
+  } catch (err) {
+    console.error('[Vercel Supabase Sync Error]:', err.message);
   }
-  return initialSyncPromise;
 }
 
 function getHandler() {
@@ -55,7 +55,7 @@ function getHandler() {
 export default async function (req, res) {
   try {
     const h = getHandler();
-    if (currentDb && !initialSyncDone) {
+    if (currentDb) {
       await ensureSync(currentDb);
     }
     return await h(req, res);
