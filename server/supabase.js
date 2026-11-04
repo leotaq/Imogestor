@@ -302,25 +302,51 @@ export async function syncPropertiesFromSupabase(db, orgId = 'aurora') {
         property_neighborhood = ?, property_city = ?
       WHERE id = ?
     `);
+    const updatePropByCode = db.prepare(`
+      UPDATE properties SET
+        name = ?, address = ?, unit = ?,
+        property_street = ?, property_number = ?, property_complement = ?,
+        property_neighborhood = ?, property_city = ?
+      WHERE org_id = ? AND code = ?
+    `);
 
     for (const p of properties) {
-      const existing = findProp.get(p.id, p.code);
+      let code = (p.code || '').trim();
+      if (!code) {
+        code = `PROP-${p.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`;
+      }
+      const existing = findProp.get(p.id, code);
       const unit = p.property_complement || '';
       const name = p.property_street ? `${p.property_street}${p.property_number ? ', ' + p.property_number : ''}` : p.address;
       if (!existing) {
-        insertProp.run(
-          p.id,
-          orgId,
-          p.code,
-          name,
-          p.address,
-          unit,
-          p.property_street || '',
-          p.property_number || '',
-          p.property_complement || '',
-          p.property_neighborhood || '',
-          p.property_city || 'Taquara'
-        );
+        try {
+          insertProp.run(
+            p.id,
+            orgId,
+            code,
+            name,
+            p.address,
+            unit,
+            p.property_street || '',
+            p.property_number || '',
+            p.property_complement || '',
+            p.property_neighborhood || '',
+            p.property_city || 'Taquara'
+          );
+        } catch {
+          updatePropByCode.run(
+            name,
+            p.address,
+            unit,
+            p.property_street || '',
+            p.property_number || '',
+            p.property_complement || '',
+            p.property_neighborhood || '',
+            p.property_city || 'Taquara',
+            orgId,
+            code
+          );
+        }
       } else {
         updateProp.run(
           name,
@@ -357,14 +383,17 @@ export async function syncInspectionsFromSupabase(db, orgId = 'aurora') {
     if (!Array.isArray(inspections)) return;
 
     const findInsp = db.prepare('SELECT id, protocol, status, revision FROM inspections WHERE id = ?');
-    const propByCode = db.prepare('SELECT id, code, address, unit, name FROM properties WHERE code = ? LIMIT 1');
+    const propByCode = db.prepare('SELECT id, code, address, unit, name FROM properties WHERE org_id = ? AND code = ? LIMIT 1');
+    const propByAddress = db.prepare('SELECT id, code, address, unit, name FROM properties WHERE org_id = ? AND address = ? LIMIT 1');
+    const defaultProp = db.prepare('SELECT id FROM properties WHERE org_id = ? LIMIT 1').get(orgId)?.id;
+    const defaultAdmin = db.prepare("SELECT id FROM users WHERE org_id = ? AND role = 'admin' LIMIT 1").get(orgId)?.id || 'marina';
+
     const insertProp = db.prepare(`
       INSERT INTO properties (
         id, org_id, code, name, address, unit, tenant, contact, owner, active,
         property_street, property_number, property_complement, property_neighborhood, property_city
       ) VALUES (?, ?, ?, ?, ?, ?, '', '', '', 1, ?, ?, ?, ?, ?)
     `);
-    const defaultAdmin = db.prepare("SELECT id FROM users WHERE org_id = ? AND role = 'admin' LIMIT 1").get(orgId)?.id || 'marina';
 
     const insertInsp = db.prepare(`
       INSERT INTO inspections (
@@ -412,26 +441,37 @@ export async function syncInspectionsFromSupabase(db, orgId = 'aurora') {
           s.id
         );
       } else {
-        let prop = s.property_code ? propByCode.get(s.property_code) : null;
+        let prop = s.property_code ? propByCode.get(orgId, s.property_code.trim()) : null;
+        if (!prop && s.property_address) {
+          prop = propByAddress.get(orgId, s.property_address.trim());
+        }
         let propId = prop?.id;
-        let propCode = s.property_code || '';
+        let propCode = (s.property_code || '').trim();
         let addressSnapshot = s.property_address || '';
 
         if (!propId) {
-          propId = 'prop-' + (s.property_code || s.id.slice(0, 8));
-          insertProp.run(
-            propId,
-            orgId,
-            propCode,
-            s.property_street || s.property_address || 'Imóvel ' + propCode,
-            addressSnapshot,
-            s.property_complement || '',
-            s.property_street || '',
-            s.property_number || '',
-            s.property_complement || '',
-            s.property_neighborhood || '',
-            s.property_city || 'Taquara'
-          );
+          propId = 'prop-' + s.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
+          if (!propCode) {
+            propCode = `SAMI-${s.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`;
+          }
+          try {
+            insertProp.run(
+              propId,
+              orgId,
+              propCode,
+              s.property_street || s.property_address || 'Imóvel ' + propCode,
+              addressSnapshot,
+              s.property_complement || '',
+              s.property_street || '',
+              s.property_number || '',
+              s.property_complement || '',
+              s.property_neighborhood || '',
+              s.property_city || 'Taquara'
+            );
+          } catch {
+            const existingProp = propByCode.get(orgId, propCode);
+            propId = existingProp?.id || defaultProp;
+          }
         }
 
         const count = db.prepare('SELECT COUNT(*) n FROM inspections WHERE org_id = ?').get(orgId).n;

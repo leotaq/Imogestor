@@ -69,8 +69,14 @@ export function createHandler({db,uploadsDir}) {
         db.prepare('DELETE FROM sessions WHERE token=?').run(sha(cookie));res.setHeader('Set-Cookie','gestor_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');json({ok:true});return;
       }
       if(req.method==='POST'&&pathname==='/api/sync') {
-        await syncAllFromSupabase(db, user.org_id);
-        json({ok:true,synced_at:new Date().toISOString()});return;
+        try {
+          await syncAllFromSupabase(db, user.org_id);
+          json({ok:true,synced_at:new Date().toISOString()});
+        } catch (err) {
+          console.error('[API Sync Error]:', err.message);
+          json({ok:false,error:err.message}, 500);
+        }
+        return;
       }
       if(req.method==='GET'&&pathname==='/api/state') {
         const now = Date.now();
