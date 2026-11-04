@@ -377,7 +377,7 @@ export class Service {
     this.db.prepare('INSERT INTO contract_events(org_id,contract_id,actor,action,detail,created_at) VALUES(?,?,?,?,?,?)').run(user.org_id,id,user.name,action,detail,now);
   }
   createContract(user,input) {
-    this.admin(user);
+    this.contractAccess(user);
     const property=this.row('properties',input.property_id,user.org_id),kind=pick(input.kind,CONTRACT_KINDS,'Tipo de contrato');
     if(property.active!==1) throw new AppError('Este imóvel está arquivado e não aceita novos pedidos.');
     const requesterId=input.requested_by||user.id,requester=this.row('users',requesterId,user.org_id);

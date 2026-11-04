@@ -9,4 +9,4 @@ export const ticketInput={property_id:'p1',title:'Teste de vazamento',descriptio
 export const inspectionInput={property_id:'p1',kind:'move_out',requester_id:'rafael',deadline_at:'2026-12-15'};
 export const quoteInput={provider_id:'v1',scope:'Reparo de torneira',items:[{label:'Mão de obra',cents:18000}]};
 export function tempDir(){return mkdtempSync(join(tmpdir(),'gestor-test-'));}
-export function removeTestDir(dir){const path=resolve(dir);if(!path.startsWith(resolve(tmpdir())+sep)||!basename(path).startsWith('gestor-test-'))throw new Error('Limpeza fora do diretório de teste.');rmSync(path,{recursive:true,force:true});}
+export function removeTestDir(dir){const path=resolve(dir);if(!path.startsWith(resolve(tmpdir())+sep)||!basename(path).startsWith('gestor-test-'))throw new Error('Limpeza fora do diretório de teste.');rmSync(path,{recursive:true,force:true,maxRetries:5,retryDelay:50});}
