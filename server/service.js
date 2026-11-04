@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { passwordHash } from './database.js';
-import { syncUserToSupabase, syncPropertyToSupabase } from './supabase.js';
+import { syncUserToSupabase, syncPropertyToSupabase, syncInspectionToSupabase } from './supabase.js';
 
 export const STATUSES = ['new','triage','waiting','in_progress','resolved','closed','cancelled'];
 export const PRIORITIES = ['low','normal','high','urgent'];
@@ -156,9 +156,10 @@ export class Service {
   inspectionAccess(user) { if(!['admin','staff'].includes(user.role)) throw new AppError('Esta área exige acesso da equipe de vistorias.',403); }
   listInspections(user) {
     if(!['admin','staff'].includes(user.role)) return [];
-    return this.db.prepare(`SELECT i.*,p.name property_name,p.unit,coalesce(nullif(i.property_code_snapshot,''),p.code) property_code,r.name requester_name,v.name inspector_name
-      FROM inspections i JOIN properties p ON p.id=i.property_id AND p.org_id=i.org_id
-      JOIN users r ON r.id=i.requester_id AND r.org_id=i.org_id
+    return this.db.prepare(`SELECT i.*,coalesce(p.name,i.address_snapshot,'Imóvel') property_name,coalesce(p.unit,'') unit,coalesce(nullif(i.property_code_snapshot,''),p.code,'') property_code,coalesce(r.name,'Equipe') requester_name,v.name inspector_name
+      FROM inspections i
+      LEFT JOIN properties p ON p.id=i.property_id AND p.org_id=i.org_id
+      LEFT JOIN users r ON r.id=i.requester_id AND r.org_id=i.org_id
       LEFT JOIN users v ON v.id=i.inspector_id AND v.org_id=i.org_id
       WHERE i.org_id=? ORDER BY CASE WHEN i.scheduled_at='' THEN 1 ELSE 0 END,i.scheduled_at,i.created_at DESC`).all(user.org_id);
   }

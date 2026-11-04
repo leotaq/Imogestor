@@ -32,6 +32,7 @@ const icons={
   alert:'<path d="m12 3 10 18H2Z M12 9v5M12 17v1"/>', wallet:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 8h18M16 12h5v5h-5Z"/>',
   mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
   leaf:'<path d="M20 4C5 2 2 15 10 18c7 3 11-5 10-14ZM7 20l9-11"/>',
+  refresh:'<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>',
   moon:'<path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z"/>',
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m17.07 7.07-1.41-1.41M6.34 6.34 4.93 4.93m14.14 0-1.41 1.41M6.34 17.66l-1.41 1.41"/>'
 };
@@ -67,7 +68,7 @@ function shell(){
   if(!pages[page])page='inspections';
   if(page==='contracts'&&!canUseContracts())page='inspections';
   const [title,subtitle]=pages[page];
-  $('#app').innerHTML=`<div class="layout"><aside class="sidebar"><a href="#overview" class="brand" data-nav="overview"><img src="/favicon.svg" alt=""><span>gestor<span class="brand-light">imob</span><small>VISTORIAS E CONTRATOS</small></span></a><span class="nav-label">GESTÃO</span><nav aria-label="Navegação principal">${[['overview','grid','Visão geral'],['tickets','ticket','Chamados'],['properties','building','Imóveis'],...(!canManage()?[['providers','tool','Prestadores']]:[]),['agenda','calendar','Agenda'],['notifications','alert','Avisos'],['reports','chart','Relatórios']].map(([key,i,label])=>`<a href="#${key}" data-nav="${key}" class="nav-item ${page===key?'selected':''}" ${page===key?'aria-current="page"':''}>${icon(i)}<span>${label}</span>${key==='tickets'?`<b>${state.tickets.filter(active).length}</b>`:key==='notifications'&&state.notifications?.unread_count?`<b>${state.notifications.unread_count}</b>`:''}</a>`).join('')}</nav><div class="sidebar-bottom"><div class="user-card"><span class="avatar">${h(initials(state.user.name))}</span><div><strong>${h(state.user.name)}</strong><small>${{admin:'Gestão',staff:'Atendimento',finance:'Financeiro'}[state.user.role]}</small></div><button class="icon-btn" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></div></aside><div class="workspace-main"><header class="topbar"><div class="breadcrumb">Painel <span>/</span> <strong>${title}</strong></div><div class="topbar-right">${themeButton()}<span class="topbar-date">${new Intl.DateTimeFormat('pt-BR',{day:'numeric',month:'long',timeZone:'America/Sao_Paulo'}).format(new Date())}</span><span class="avatar small">${h(initials(state.user.name))}</span><button class="icon-btn mobile-logout" data-action="logout" aria-label="Sair da conta">${icon('logout')}</button></div></header><main id="main"><div class="page-heading"><div><p class="eyebrow">${page==='overview'?'SEU DIA, ORGANIZADO':'GESTOR IMOB'}</p><h1>${page==='overview'?'Tudo sob controle.':title}</h1><p>${page==='overview'?'Acompanhe sua carteira e cuide do que precisa de atenção.':subtitle}</p></div><div class="heading-actions">${page==='reports'?`<a class="btn secondary" href="/api/export">${icon('file')} Exportar CSV</a>`:''}<button class="btn primary" data-action="new-ticket">${icon('plus')} Novo chamado</button></div></div><div id="page-content">${content()}</div><footer class="page-footer"><span>Gestor Imob <span class="footer-dot">·</span> Cuidar fica mais simples.</span><span>Sistema desenvolvido e criado por Léo Antunes</span></footer></main></div></div>`;
+  $('#app').innerHTML=`<div class="layout"><aside class="sidebar"><a href="#overview" class="brand" data-nav="overview"><img src="/favicon.svg" alt=""><span>gestor<span class="brand-light">imob</span><small>VISTORIAS E CONTRATOS</small></span></a><span class="nav-label">GESTÃO</span><nav aria-label="Navegação principal">${[['overview','grid','Visão geral'],['tickets','ticket','Chamados'],['properties','building','Imóveis'],...(!canManage()?[['providers','tool','Prestadores']]:[]),['agenda','calendar','Agenda'],['notifications','alert','Avisos'],['reports','chart','Relatórios']].map(([key,i,label])=>`<a href="#${key}" data-nav="${key}" class="nav-item ${page===key?'selected':''}" ${page===key?'aria-current="page"':''}>${icon(i)}<span>${label}</span>${key==='tickets'?`<b>${state.tickets.filter(active).length}</b>`:key==='notifications'&&state.notifications?.unread_count?`<b>${state.notifications.unread_count}</b>`:''}</a>`).join('')}</nav><div class="sidebar-bottom"><div class="user-card"><span class="avatar">${h(initials(state.user.name))}</span><div><strong>${h(state.user.name)}</strong><small>${{admin:'Gestão',staff:'Atendimento',finance:'Financeiro'}[state.user.role]}</small></div><button class="icon-btn" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></div></aside><div class="workspace-main"><header class="topbar"><div class="breadcrumb">Painel <span>/</span> <strong>${title}</strong></div><div class="topbar-right"><button type="button" class="icon-btn sync-btn" data-action="sync-database" title="Sincronizar com banco de dados Supabase" aria-label="Sincronizar com banco de dados">${icon('refresh')}</button>${themeButton()}<span class="topbar-date">${new Intl.DateTimeFormat('pt-BR',{day:'numeric',month:'long',timeZone:'America/Sao_Paulo'}).format(new Date())}</span><span class="avatar small">${h(initials(state.user.name))}</span><button class="icon-btn mobile-logout" data-action="logout" aria-label="Sair da conta">${icon('logout')}</button></div></header><main id="main"><div class="page-heading"><div><p class="eyebrow">${page==='overview'?'SEU DIA, ORGANIZADO':'GESTOR IMOB'}</p><h1>${page==='overview'?'Tudo sob controle.':title}</h1><p>${page==='overview'?'Acompanhe sua carteira e cuide do que precisa de atenção.':subtitle}</p></div><div class="heading-actions">${page==='reports'?`<a class="btn secondary" href="/api/export">${icon('file')} Exportar CSV</a>`:''}<button class="btn primary" data-action="new-ticket">${icon('plus')} Novo chamado</button></div></div><div id="page-content">${content()}</div><footer class="page-footer"><span>Gestor Imob <span class="footer-dot">·</span> Cuidar fica mais simples.</span><span>Sistema desenvolvido e criado por Léo Antunes</span></footer></main></div></div>`;
   const nav=$('nav[aria-label="Navegação principal"]');
   nav.insertAdjacentHTML('afterbegin',`<a href="#inspections" data-nav="inspections" class="nav-item ${page==='inspections'?'selected':''}" ${page==='inspections'?'aria-current="page"':''}>${icon('building')}<span>Vistorias</span></a>`);
   nav.insertBefore(nav.querySelector('[data-nav="agenda"]'),nav.children[1]);
@@ -404,6 +405,20 @@ document.addEventListener('click',async event=>{
     if(a==='inspection-add-property'){pendingInspectionDraft=Object.fromEntries(new FormData($('#editor form[data-form="inspection"]')));newProperty();}
     if(a==='contract-add-property'){pendingContractDraft=Object.fromEntries(new FormData($('#editor form[data-form="contract"]')));newProperty();}
     if(a==='close-editor'){if(pendingInspectionDraft){const draft=pendingInspectionDraft;pendingInspectionDraft=null;newInspection(draft);}else if(pendingContractDraft){const draft=pendingContractDraft;pendingContractDraft=null;newContract(draft);}else $('#editor').close();}if(a==='close-details')$('#details').close();
+    if(a==='sync-database'){
+      el.classList.add('spinning');
+      try{
+        toast('Sincronizando com o banco de dados Supabase…');
+        await post('/sync',{});
+        await load();
+        toast('Banco de dados sincronizado com sucesso!');
+      }catch(err){
+        toast('Erro ao sincronizar: '+err.message,true);
+      }finally{
+        el.classList.remove('spinning');
+      }
+      return;
+    }
     if(a==='theme'){theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;localStorage.setItem(themeKey,theme);el.setAttribute('aria-label',`Ativar tema ${theme==='dark'?'claro':'escuro'}`);el.title=`Ativar tema ${theme==='dark'?'claro':'escuro'}`;el.innerHTML=icon(theme==='dark'?'sun':'moon');}
     if(a==='inspection-view'){inspectionView=el.dataset.view;$('#page-content').innerHTML=content();}
     if(a==='open-notification'){
@@ -553,3 +568,9 @@ for(const id of ['editor','details'])$('#'+id).addEventListener('click',event=>{
 $('#editor').addEventListener('close',()=>{if(pendingInspectionDraft){const draft=pendingInspectionDraft;pendingInspectionDraft=null;newInspection(draft);}else if(pendingContractDraft){const draft=pendingContractDraft;pendingContractDraft=null;newContract(draft);}});
 try{await load();}catch(error){if(!state)login();else toast(error.message,true);}
 setInterval(()=>{if(state)refreshNotifications().catch(()=>{});},30000);
+
+window.addEventListener('focus', () => {
+  if (state && ['inspections', 'properties'].includes(page)) {
+    load().catch(() => {});
+  }
+});

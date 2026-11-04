@@ -3,7 +3,7 @@ import { existsSync, copyFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { openDatabase, seedDemo } from '../server/database.js';
 import { createHandler } from '../server/http.js';
-import { syncPeopleFromSupabase } from '../server/supabase.js';
+import { syncAllFromSupabase } from '../server/supabase.js';
 
 let appHandler = null;
 let currentDb = null;

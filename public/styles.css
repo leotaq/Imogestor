@@ -270,3 +270,6 @@ label{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:500;
 .history-event-title h4{margin:0;font-size:13px;font-weight:600;color:var(--ink)}
 .history-event-details{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
 .history-event-action{flex-shrink:0}
+
+.sync-btn.spinning svg { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }

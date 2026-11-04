@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { writeFileSync, existsSync, readFileSync, unlinkSync, mkdirSync } from 'node:fs';
 import { openDatabase, seedDemo } from './database.js';
 import { createApp } from './http.js';
-import { syncPeopleFromSupabase } from './supabase.js';
+import { syncAllFromSupabase } from './supabase.js';
 
 if(process.env.NODE_ENV==='production') throw new Error('Esta versão funciona apenas localmente. Não iniciar em produção.');
 const root=fileURLToPath(new URL('../',import.meta.url)),dataDir=join(root,'data');
@@ -20,7 +20,10 @@ let db,server;
 function cleanup(){try{db?.close();}catch{}try{if(readFileSync(lock,'utf8')===String(process.pid))unlinkSync(lock);}catch{}}
 try {
   db=openDatabase(join(dataDir,'gestor.sqlite'));seedDemo(db);
-  syncPeopleFromSupabase(db, 'aurora').catch(err => console.error('[Startup Supabase Sync Error]:', err.message));
+  syncAllFromSupabase(db, 'aurora').catch(err => console.error('[Startup Supabase Sync Error]:', err.message));
+  setInterval(() => {
+    syncAllFromSupabase(db, 'aurora').catch(err => console.error('[Background Supabase Sync Error]:', err.message));
+  }, 30000);
   ({server}=createApp({db,uploadsDir:join(root,'uploads')}));
   const port=Number(process.env.PORT||4173);
   if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Porta inválida.');

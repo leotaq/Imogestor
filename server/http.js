@@ -1,3 +1,4 @@
+import { isSupabaseConfigured, syncAllFromSupabase } from './supabase.js';
 import { createServer } from 'node:http';
 import { randomBytes, randomUUID, createHash, scryptSync, timingSafeEqual } from 'node:crypto';
 import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
@@ -21,6 +22,7 @@ async function body(req) {
   try { const data=JSON.parse(Buffer.concat(chunks).toString('utf8'));if(!data||typeof data!=='object'||Array.isArray(data)) throw new Error();return data; } catch { throw new AppError('Dados de envio inválidos.'); }
 }
 
+let lastStateSync = 0;
 export function createHandler({db,uploadsDir}) {
   const service=new Service(db), attempts=new Map();
   return async(req,res)=>{
@@ -66,7 +68,16 @@ export function createHandler({db,uploadsDir}) {
       if(req.method==='POST'&&pathname==='/api/logout') {
         db.prepare('DELETE FROM sessions WHERE token=?').run(sha(cookie));res.setHeader('Set-Cookie','gestor_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');json({ok:true});return;
       }
+      if(req.method==='POST'&&pathname==='/api/sync') {
+        await syncAllFromSupabase(db, user.org_id);
+        json({ok:true,synced_at:new Date().toISOString()});return;
+      }
       if(req.method==='GET'&&pathname==='/api/state') {
+        const now = Date.now();
+        if(now - lastStateSync > 15000) {
+          lastStateSync = now;
+          await syncAllFromSupabase(db, user.org_id).catch(err => console.error('[Auto State Sync Error]:', err.message));
+        }
         json({...service.catalogs(user),...(user.role==='admin'?{adminUsers:service.adminUsers(user)}:{}),tickets:service.list(user),inspections:service.listInspections(user),contracts:service.listContracts(user),notifications:service.notifications(user),
           orders:db.prepare(`SELECT o.*,t.protocol,t.title,p.name property_name,p.unit,v.name provider_name FROM orders o JOIN tickets t ON t.id=o.ticket_id AND t.org_id=o.org_id JOIN properties p ON p.id=t.property_id AND p.org_id=t.org_id JOIN providers v ON v.id=o.provider_id AND v.org_id=o.org_id WHERE o.org_id=? ORDER BY o.scheduled_at`).all(user.org_id),
           costs:db.prepare('SELECT c.*,t.protocol,t.title FROM costs c JOIN tickets t ON t.id=c.ticket_id AND t.org_id=c.org_id WHERE c.org_id=? ORDER BY c.created_at DESC').all(user.org_id)});return;
