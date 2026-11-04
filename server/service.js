@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { passwordHash } from './database.js';
+import { syncUserToSupabase, syncPropertyToSupabase } from './supabase.js';
 
 export const STATUSES = ['new','triage','waiting','in_progress','resolved','closed','cancelled'];
 export const PRIORITIES = ['low','normal','high','urgent'];
@@ -112,18 +113,20 @@ export class Service {
   createUser(user,input) {
     this.admin(user);
     const fields=userInput(input);
-    return this.transaction(()=>{
+    const created=this.transaction(()=>{
       this.ensureUniqueUser(fields.username,fields.email);
       const id=randomUUID();
       this.db.prepare('INSERT INTO users(id,org_id,name,username,email,password,role,job_title,active) VALUES(?,?,?,?,?,?,?,?,1)').run(id,user.org_id,fields.name,fields.username,fields.email,passwordHash(fields.password),fields.role,fields.job_title);
       return this.db.prepare('SELECT id,name,username,email,role,job_title,active FROM users WHERE id=? AND org_id=?').get(id,user.org_id);
     });
+    syncUserToSupabase(created).catch(err => console.error('[Supabase createUser sync error]:', err.message));
+    return created;
   }
   updateUser(user,id,input) {
     this.admin(user);
     const current=this.row('users',id,user.org_id),fields=userInput(input,true,current.job_title||'');
     if(id===user.id&&(fields.role!==current.role||fields.active!==current.active)) throw new AppError('Peça a outro administrador para alterar sua própria função ou situação.');
-    return this.transaction(()=>{
+    const updated=this.transaction(()=>{
       this.ensureUniqueUser(fields.username,fields.email,id);
       if(current.role==='admin'&&current.active===1&&(fields.role!=='admin'||fields.active!==1)) {
         const remaining=this.db.prepare("SELECT COUNT(*) total FROM users WHERE org_id=? AND role='admin' AND active=1 AND id<>?").get(user.org_id,id).total;
@@ -133,6 +136,8 @@ export class Service {
       if(fields.password||fields.role!==current.role||fields.active!==current.active) this.db.prepare('DELETE FROM sessions WHERE user_id=?').run(id);
       return this.db.prepare('SELECT id,name,username,email,role,job_title,active FROM users WHERE id=? AND org_id=?').get(id,user.org_id);
     });
+    syncUserToSupabase(updated).catch(err => console.error('[Supabase updateUser sync error]:', err.message));
+    return updated;
   }
   list(user) {
     return this.db.prepare(`SELECT t.*,p.name property_name,p.unit,p.code property_code,u.name assignee_name,
@@ -591,6 +596,8 @@ export class Service {
       const address=[`${street}${number?`, ${number}`:''}`,neighborhood,city].filter(Boolean).join(' · ');
       this.db.prepare(`INSERT INTO properties(id,org_id,code,name,address,unit,tenant,contact,owner,property_street,property_number,property_complement,property_neighborhood,property_city)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,user.org_id,code,street,address,complement,'','','',street,number,complement,neighborhood,city);
+        const propRow=this.db.prepare('SELECT * FROM properties WHERE id=? AND org_id=?').get(id,user.org_id);
+        syncPropertyToSupabase(propRow).catch(err=>console.error('[Supabase catalogCreate sync error]:',err.message));
     } else if(kind==='providers') {
       const fields=['name','specialty','phone','email'].map(k=>text(input[k]||'',k,180,!['email','phone'].includes(k)));
       this.db.prepare('INSERT INTO providers VALUES (?,?,?,?,?,?,1)').run(id,user.org_id,...fields);

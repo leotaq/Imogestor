@@ -3,8 +3,22 @@ import { existsSync, copyFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { openDatabase, seedDemo } from '../server/database.js';
 import { createHandler } from '../server/http.js';
+import { syncPeopleFromSupabase } from '../server/supabase.js';
 
 let appHandler = null;
+let currentDb = null;
+let initialSyncDone = false;
+let initialSyncPromise = null;
+
+function ensureSync(db) {
+  if (initialSyncDone) return Promise.resolve();
+  if (!initialSyncPromise) {
+    initialSyncPromise = syncPeopleFromSupabase(db, 'aurora')
+      .catch(err => console.error('[Vercel Supabase Sync Error]:', err.message))
+      .finally(() => { initialSyncDone = true; });
+  }
+  return initialSyncPromise;
+}
 
 function getHandler() {
   if (appHandler) return appHandler;
@@ -30,17 +44,20 @@ function getHandler() {
     dbPath = fileURLToPath(new URL('../data/gestor.sqlite', import.meta.url));
   }
 
-  const db = openDatabase(dbPath);
-  seedDemo(db);
+  currentDb = openDatabase(dbPath);
+  seedDemo(currentDb);
   const uploadsDir = isVercel ? '/tmp/uploads' : fileURLToPath(new URL('../uploads', import.meta.url));
   try { mkdirSync(uploadsDir, { recursive: true }); } catch {}
-  appHandler = createHandler({ db, uploadsDir });
+  appHandler = createHandler({ db: currentDb, uploadsDir });
   return appHandler;
 }
 
 export default async function (req, res) {
   try {
     const h = getHandler();
+    if (currentDb && !initialSyncDone) {
+      await ensureSync(currentDb);
+    }
     return await h(req, res);
   } catch (err) {
     console.error('API Handler Error:', err);

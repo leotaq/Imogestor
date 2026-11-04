@@ -1,3 +1,4 @@
+import { mapUserToPersonRole, mapPersonRoleToJobTitle } from '../server/supabase.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fixture,ticketInput,inspectionInput,quoteInput} from './helpers.js';
@@ -201,4 +202,18 @@ test('gestão pode cadastrar, editar e excluir prestadores',()=>{
 
     assert.throws(()=>s.deleteProvider(admin,'v2'),/vinculados/);
   }finally{db.close();}
+});
+
+test('mapeamento de cargo e sinc de usuario no supabase',()=>{
+  assert.equal(mapUserToPersonRole({ job_title: 'Vistoriador' }), 'inspector');
+  assert.equal(mapUserToPersonRole({ job_title: 'Atendente' }), 'attendant');
+  assert.equal(mapUserToPersonRole({ job_title: 'Assistente' }), 'assistant');
+  assert.equal(mapUserToPersonRole({ role: 'admin' }), 'manager');
+  assert.equal(mapUserToPersonRole({ job_title: 'gestora' }), 'manager');
+  assert.equal(mapUserToPersonRole({ role: 'staff' }), 'attendant');
+
+  assert.equal(mapPersonRoleToJobTitle('inspector'), 'vistoriador');
+  assert.equal(mapPersonRoleToJobTitle('manager'), 'gestora');
+  assert.equal(mapPersonRoleToJobTitle('attendant'), 'atendente');
+  assert.equal(mapPersonRoleToJobTitle('assistant'), 'assistente');
 });

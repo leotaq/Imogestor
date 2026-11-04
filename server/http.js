@@ -77,11 +77,21 @@ export function createHandler({db,uploadsDir}) {
         const rows=[['Protocolo','Título','Imóvel','Solicitante','Categoria','Prioridade','Situação','Responsável','Prazo','Custo realizado (BRL)'],...service.list(user).map(t=>[t.protocol,t.title,`${t.property_name} ${t.unit}`,t.requester,t.category,t.priority,t.status,t.assignee_name,t.due_date,(t.cost_total/100).toFixed(2)])];
         res.writeHead(200,{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="chamados.csv"'});res.end('\uFEFF'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n'));return;
       }
-      if(req.method==='POST'&&pathname==='/api/users') {json(service.createUser(user,await body(req)),201);return;}
+      if(req.method==='POST'&&pathname==='/api/users') {
+          const created = service.createUser(user,await body(req));
+          await syncUserToSupabase(created).catch(e => console.error('[Supabase sync error]:', e.message));
+          json(created,201);
+          return;
+        }
       const notificationMatch=pathname.match(/^\/api\/notifications\/([\w-]+)\/read$/);
       if(req.method==='POST'&&notificationMatch) {json(service.markNotificationRead(user,notificationMatch[1]));return;}
       const userMatch=pathname.match(/^\/api\/users\/([\w-]+)$/);
-      if(userMatch&&req.method==='PATCH') {json(service.updateUser(user,userMatch[1],await body(req)));return;}
+      if(userMatch&&req.method==='PATCH') {
+          const updated = service.updateUser(user,userMatch[1],await body(req));
+          await syncUserToSupabase(updated).catch(e => console.error('[Supabase sync error]:', e.message));
+          json(updated);
+          return;
+        }
       const providerMatch=pathname.match(/^\/api\/providers\/([\w-]+)$/);
       if(providerMatch) {
         if(req.method==='GET') {json(service.row('providers',providerMatch[1],user.org_id));return;}
