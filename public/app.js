@@ -155,17 +155,17 @@ function openScheduleModal(inspectionId) {
   const i = state.inspections.find(x => x.id === inspectionId) || inspectionDetail;
   if (!i) return;
 
-  const staff = state.users.filter(u => ['admin', 'staff'].includes(u.role) && u.active === 1);
+  const staff = (state.users || []).filter(u => ['admin', 'staff'].includes(u.role) && (u.active === 1 || u.active === undefined));
   const inspectors = staff.filter(u => String(u.job_title || '').toLowerCase().includes('vistoriador') || u.role === 'admin');
-  const list = inspectors.length ? inspectors : staff;
+  const list = inspectors.length ? inspectors : (staff.length ? staff : (state.users || []));
 
   let currentInspectorId = i.inspector_id;
-  if (!currentInspectorId) {
-    if (String(state.user.job_title || '').toLowerCase().includes('vistoriador')) {
+  if (!currentInspectorId || !list.some(u => u.id === currentInspectorId)) {
+    if (String(state.user?.job_title || '').toLowerCase().includes('vistoriador')) {
       currentInspectorId = state.user.id;
     } else {
       const defaultInsp = list.find(u => String(u.job_title || '').toLowerCase().includes('vistoriador')) || list[0];
-      currentInspectorId = defaultInsp ? defaultInsp.id : state.user.id;
+      currentInspectorId = defaultInsp ? defaultInsp.id : (list[0]?.id || state.user?.id);
     }
   }
 
@@ -229,8 +229,8 @@ function openScheduleModal(inspectionId) {
         </div>
 
         <div class="schedule-modal-actions">
-          <button type="button" class="btn secondary" data-action="close-schedule-modal">Cancelar</button>
-          <button type="button" class="btn outline-green" id="btn-sched-accept">${icon('check')} Confirmar Agendamento (Aceita)</button>
+          <button type="button" class="btn secondary cancel" data-action="close-schedule-modal">Cancelar</button>
+          <button type="button" class="btn outline-green" id="btn-sched-accept">${icon('check')} Confirmar Agendamento</button>
           <button type="button" class="btn primary" id="btn-sched-start">${icon('arrow')} Agendar e Iniciar Agora</button>
         </div>
       </form>

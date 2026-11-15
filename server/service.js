@@ -98,7 +98,7 @@ export class Service {
     return {
       organization:this.db.prepare('SELECT name FROM organizations WHERE id=?').get(user.org_id).name,
       user:{id:user.id,name:user.name,email:user.email,role:user.role},
-      users:this.db.prepare('SELECT id,name,role,job_title FROM users WHERE org_id=? AND active=1 ORDER BY name').all(user.org_id),
+      users:this.db.prepare('SELECT id,name,role,job_title,active FROM users WHERE org_id=? AND active=1 ORDER BY name').all(user.org_id),
       properties:this.db.prepare('SELECT * FROM properties WHERE org_id=? AND active=1 ORDER BY code').all(user.org_id),
       providers:this.db.prepare('SELECT * FROM providers WHERE org_id=? ORDER BY name').all(user.org_id), categories:CATEGORIES
     };
