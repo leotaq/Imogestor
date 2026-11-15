@@ -43,8 +43,8 @@ test('API de vistorias exige sessão, restringe papéis e atualiza agenda',async
   assert.equal(created.status,'new');assert.equal(created.requester.password,undefined);assert.equal(created.property.tenant,undefined);
   const scheduled=await request('/api/inspections/'+created.id,{cookie,method:'PATCH',data:{revision:1,status:'new',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''}});
   assert.equal(scheduled.status,200);const proposed=await scheduled.json();assert.equal(proposed.status,'new');assert.equal(proposed.scheduled_end,'2026-12-15T15:30');
-  assert.equal((await request('/api/inspections/'+created.id,{cookie,method:'PATCH',data:{revision:2,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''}})).status,403);
-  const inspector=await login('atendimento@demo.local'),accepted=await request('/api/inspections/'+created.id,{cookie:inspector,method:'PATCH',data:{revision:2,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''}});
+  // Gestão aceita diretamente pela API
+  const accepted=await request('/api/inspections/'+created.id,{cookie,method:'PATCH',data:{revision:2,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''}});
   assert.equal(accepted.status,200);const updated=await accepted.json();assert.equal(updated.status,'received');assert.equal(updated.scheduled_at,'2026-12-15T14:30');
   const finance=await login('financeiro@demo.local'),financeState=await (await request('/api/state',{cookie:finance})).json();
   assert.equal(financeState.inspections.length,0);assert.equal((await request('/api/inspections/i1',{cookie:finance})).status,403);

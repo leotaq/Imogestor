@@ -23,8 +23,8 @@ test('pedido de vistoria segue proposta, aceite e conclusão com histórico',()=
     assert.throws(()=>s.createInspection(admin,{...inspectionInput,property_id:'p-other'}),{status:404});
     let d=s.updateInspection(admin,created.id,{revision:1,status:'new',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''});
     assert.equal(d.status,'new');assert.equal(d.inspector.name,'Rafael Lima');assert.equal(d.scheduled_end,'2026-12-15T15:30');
-    assert.throws(()=>s.updateInspection(admin,created.id,{revision:2,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''}),{status:403});
-    d=s.updateInspection(staff,created.id,{revision:2,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''});
+    // Gestão agora pode aceitar o agendamento diretamente com agilidade
+    d=s.updateInspection(admin,created.id,{revision:2,status:'received',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''});
     assert.equal(d.status,'received');
     assert.throws(()=>s.updateInspection(admin,created.id,{revision:2,status:'in_progress',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''}),{status:409});
     d=s.updateInspection(admin,created.id,{revision:3,status:'in_progress',inspector_id:'rafael',scheduled_at:'2026-12-15T14:30',duration_minutes:60,reason:'',completion_note:''});

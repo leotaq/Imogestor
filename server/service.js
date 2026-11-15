@@ -297,7 +297,7 @@ export class Service {
     let nextStatus=status;
     if(current.status==='new'&&status==='received') {
       if(!scheduled) throw new AppError('A vistoria precisa ter horário proposto antes do aceite.');
-      if(user.id!==inspectorId) throw new AppError('Somente o vistoriador designado pode aceitar este horário.',403);
+      if(user.id!==inspectorId && user.role!=='admin') throw new AppError('Somente o vistoriador designado ou a Gestão pode aceitar este horário.',403);
     }
     if(current.status==='received'&&appointmentChanged) nextStatus='new';
     if(!transitions[current.status].includes(nextStatus)) throw new AppError('Transição inválida para esta vistoria.');
@@ -319,7 +319,8 @@ export class Service {
       if(completion) changes.push(completion);
       this.inspectionEvent(user,id,nextStatus!==current.status?'Situação atualizada':'Agendamento atualizado',changes.join(' · ')||'Registro atualizado.');
       if(nextStatus==='new'&&scheduled&&(appointmentChanged||current.status!=='new')) this.inspectionEvent(user,id,'Novo horário proposto',`${this.row('users',inspectorId,user.org_id).name} · ${appointment.start}–${appointment.end}. Aguardando novo aceite.`);
-      if(nextStatus==='received'&&current.status==='new') this.inspectionEvent(user,id,'Horário aceito',`${this.row('users',inspectorId,user.org_id).name} confirmou o agendamento.`);
+      if(nextStatus==='received'&&current.status==='new') this.inspectionEvent(user,id,'Horário aceito',user.id===inspectorId?`${user.name} confirmou o agendamento.`:`Agendamento aceito por ${user.name} para o vistoriador ${this.row('users',inspectorId,user.org_id).name}.`);
+      if(nextStatus==='in_progress'&&current.status==='new') this.inspectionEvent(user,id,'Vistoria iniciada',`Vistoria iniciada por ${user.name}.`);
       if(nextStatus==='completed'&&current.status!=='completed'&&current.requester_id!==user.id) {
         const requester=this.db.prepare('SELECT active FROM users WHERE id=? AND org_id=?').get(current.requester_id,user.org_id);
         if(requester?.active) this.db.prepare('INSERT OR IGNORE INTO inspection_notifications(id,org_id,inspection_id,recipient_id,created_at) VALUES(?,?,?,?,?)').run(randomUUID(),user.org_id,id,current.requester_id,now);

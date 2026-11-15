@@ -105,10 +105,58 @@ function suggestedInspectionDuration(propertyId,kind){
   return values.length?Math.ceil(values[Math.floor(values.length/2)]/15)*15:60;
 }
 function filteredInspections(){const status=filters.inspection_status;return state.inspections.filter(i=>(status==='all'||(status?i.status===status:!['completed','finalized','cancelled'].includes(i.status)))&&(!filters.inspection_inspector||i.inspector_id===filters.inspection_inspector)&&(!filters.inspection_requester||i.requester_id===filters.inspection_requester));}
+function nextAvailableSlot(){
+  const now = new Date();
+  const spDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(now);
+  const hour = now.getHours();
+  if (hour < 8) return `${spDateStr}T08:30`;
+  if (hour >= 8 && hour < 10) return `${spDateStr}T${String(hour).padStart(2,'0')}:30`;
+  if (hour >= 10 && hour < 13) return `${spDateStr}T13:30`;
+  if (hour >= 13 && hour < 17) return `${spDateStr}T${String(hour).padStart(2,'0')}:30`;
+  const nextDay = new Date(now.getTime() + 24 * 3600 * 1000);
+  const nextDayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(nextDay);
+  return `${nextDayStr}T08:30`;
+}
+
+function quickAssignModal(i, targetStatus){
+  const staff = state.users.filter(u=>['admin','staff'].includes(u.role));
+  const inspectors = staff.filter(u=>String(u.job_title||'').toLowerCase()==='vistoriador');
+  const list = inspectors.length ? inspectors : staff;
+  const isStart = targetStatus === 'in_progress';
+
+  const d = $('#quick-assign-modal');
+  d.innerHTML = `
+    <div class="quick-assign-content">
+      <h3 id="quick-assign-title">${isStart ? 'Iniciar vistoria' : 'Aceitar vistoria'}</h3>
+      <p>Selecione o vistoriador responsável para ${isStart ? 'iniciar o atendimento' : 'confirmar o agendamento'} do imóvel <strong>${h(inspectionDisplayPropertyCode(i) || i.property_name || 'selecionado')}</strong>:</p>
+      <div class="quick-assign-grid">
+        ${list.map(u => `
+          <button type="button" class="quick-assign-item" data-action="confirm-quick-assign" data-inspection-id="${h(i.id)}" data-user-id="${h(u.id)}" data-target-status="${h(targetStatus)}">
+            <span class="avatar">${initials(u.name)}</span>
+            <span>${h(u.name)}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="quick-assign-footer">
+        <button type="button" class="btn secondary" data-action="close-quick-assign">Cancelar</button>
+      </div>
+    </div>
+  `;
+  if (!d.open) d.showModal();
+}
+
 function inspectionCard(i){
   const protocol=inspectionDisplayProtocol(i.protocol),propertyCode=inspectionDisplayPropertyCode(i),address=String(i.address_snapshot||'').trim();
   const propertyName=String(i.property_name||'').trim(),showAddress=address&&fold(address)!==fold(propertyName);
-  return `<button class="inspection-card" data-inspection="${h(i.id)}"><span class="inspection-card-top"><span class="inspection-card-tags"><span class="inspection-kind-tag inspection-kind-${h(i.kind)}"><small>Tipo de vistoria</small><strong>${h(inspectionKindNames[i.kind]||i.kind)}</strong></span>${protocol?`<span class="inspection-protocol"><small>Protocolo</small><strong>${h(protocol)}</strong></span>`:''}</span><span class="badge inspection-${h(i.status)}">Situação · ${h(inspectionStatusNames[i.status]||i.status)}</span></span><span class="inspection-card-property"><small>Imóvel / unidade</small><strong>${h(propertyName||'Não identificado')}</strong></span>${propertyCode?`<span class="inspection-card-code"><small>Código do imóvel</small><strong>${h(propertyCode)}</strong></span>`:''}${showAddress?`<span class="inspection-card-address"><small>Endereço</small><strong>${h(address)}</strong></span>`:''}<span class="inspection-card-fields"><span><small>Prazo</small><strong>${i.deadline_at?h(date(i.deadline_at)):'Não informado'}</strong></span><span><small>Vistoriador</small><strong>${h(i.inspector_name||'Não atribuído')}</strong></span><span><small>Agendamento</small><strong>${i.scheduled_at?`${h(date(i.scheduled_at))} · ${h(inspectionTimeRange(i))}`:i.status==='new'?'Aguardando agendamento':'Não agendado'}</strong></span></span>${i.status==='new'&&i.scheduled_at?'<span class="schedule-pending">Aceite do horário · aguardando vistoriador</span>':''}<span class="inspection-card-requester"><small>Solicitante</small><strong>${h(i.requester_name||'Não informado')}</strong></span></button>`;
+  let actionsHtml = '';
+  if (i.status === 'new') {
+    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}" title="Aceitar e iniciar atendimento imediatamente">${icon('arrow')} Iniciar vistoria</button><button type="button" class="card-action-btn secondary" data-action="quick-accept-inspection" data-id="${h(i.id)}" title="Aceitar agendamento">${icon('check')} Aceitar</button></div>`;
+  } else if (i.status === 'received') {
+    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}" title="Iniciar vistoria em campo">${icon('arrow')} Iniciar vistoria</button></div>`;
+  } else if (i.status === 'in_progress') {
+    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn secondary" data-action="quick-finish-inspection" data-id="${h(i.id)}" title="Registrar conclusão e laudo">${icon('check')} Concluir</button></div>`;
+  }
+  return `<article class="inspection-card" data-inspection="${h(i.id)}"><span class="inspection-card-top"><span class="inspection-card-tags"><span class="inspection-kind-tag inspection-kind-${h(i.kind)}"><small>Tipo de vistoria</small><strong>${h(inspectionKindNames[i.kind]||i.kind)}</strong></span>${protocol?`<span class="inspection-protocol"><small>Protocolo</small><strong>${h(protocol)}</strong></span>`:''}</span><span class="badge inspection-${h(i.status)}">Situação · ${h(inspectionStatusNames[i.status]||i.status)}</span></span><span class="inspection-card-property"><small>Imóvel / unidade</small><strong>${h(propertyName||'Não identificado')}</strong></span>${propertyCode?`<span class="inspection-card-code"><small>Código do imóvel</small><strong>${h(propertyCode)}</strong></span>`:''}${showAddress?`<span class="inspection-card-address"><small>Endereço</small><strong>${h(address)}</strong></span>`:''}<span class="inspection-card-fields"><span><small>Prazo</small><strong>${i.deadline_at?h(date(i.deadline_at)):'Não informado'}</strong></span><span><small>Vistoriador</small><strong>${h(i.inspector_name||'Não atribuído')}</strong></span><span><small>Agendamento</small><strong>${i.scheduled_at?`${h(date(i.scheduled_at))} · ${h(inspectionTimeRange(i))}`:i.status==='new'?'Aguardando agendamento':'Não agendado'}</strong></span></span>${i.status==='new'&&i.scheduled_at?'<span class="schedule-pending">Aceite do horário · aguardando vistoriador</span>':''}<span class="inspection-card-requester"><small>Solicitante</small><strong>${h(i.requester_name||'Não informado')}</strong></span>${actionsHtml}</article>`;
 }
 function inspectionsPage(){
   if(state.user.role==='finance')return empty('Acesso restrito','Vistorias ficam disponíveis para a equipe de gestão e atendimento.');
@@ -261,14 +309,19 @@ function renderContractDetail(){
 async function openInspection(id){try{inspectionDetail=await api('/inspections/'+id);renderInspectionDetail();if(!$('#details').open)$('#details').showModal();}catch(e){toast(e.message,true);}}
 function renderInspectionDetail(){
   const i=inspectionDetail;if(!i)return;const staff=state.users.filter(u=>['admin','staff'].includes(u.role)),inspectors=staff.filter(u=>String(u.job_title||'').toLowerCase()==='vistoriador'||u.id===i.inspector_id);
-  const pending=i.status==='new'&&i.scheduled_at&&i.inspector_id===state.user.id;
+  let quickDetailActions = '';
+  if (i.status === 'new') {
+    quickDetailActions = `<div class="notice schedule-acceptance">${icon('clock')}<span>Esta vistoria está como <strong>Nova</strong>. Você pode aceitá-la ou iniciá-la diretamente:</span><div class="record-actions"><button type="button" class="btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}">${icon('arrow')} Iniciar vistoria agora</button><button type="button" class="btn secondary" data-action="quick-accept-inspection" data-id="${h(i.id)}">${icon('check')} Aceitar agendamento</button></div></div>`;
+  } else if (i.status === 'received') {
+    quickDetailActions = `<div class="notice schedule-acceptance">${icon('check')}<span>Horário e agendamento aceitos. Pronto para iniciar o atendimento em campo:</span><div class="record-actions"><button type="button" class="btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}">${icon('arrow')} Iniciar vistoria em campo</button></div></div>`;
+  }
   const protocol=inspectionDisplayProtocol(i.protocol),propertyCode=inspectionDisplayPropertyCode(i);
   const message=`Olá, ${i.requester.name}. A vistoria${protocol?` ${protocol}`:''} (${inspectionKindNames[i.kind]}) foi concluída. Resultado: ${i.completion_note}`;
   const whatsapp=i.status==='completed'?`<a class="btn secondary full whatsapp-draft" href="https://wa.me/?text=${encodeURIComponent(message)}" target="_blank" rel="noopener noreferrer">${icon('mail')} Preparar WhatsApp para revisão</a>`:'';
   const linkedContractCard=i.contract?`<div class="inspection-contract-card"><div class="section-title slim"><h3>${icon('file')} Contrato vinculado</h3><span class="badge contract-${h(i.contract.status)}">${h(contractStatusNames[i.contract.status]||i.contract.status)}</span></div><div class="metadata"><div><span>Solicitante</span><strong>${h(i.contract.requester_name||i.requester.name)}</strong></div><div><span>Previsão de entrega/assinatura</span><strong>${h(date(i.contract.deadline_at))}</strong></div><div><span>Situação</span><strong>${h(contractStatusNames[i.contract.status]||i.contract.status)}</strong></div>${i.contract.details?`<div class="field-wide"><span>Instruções</span><strong>${h(i.contract.details)}</strong></div>`:''}</div><button type="button" class="btn secondary full" data-action="open-linked-contract" data-id="${h(i.contract.id)}">Ver solicitação de contrato ${icon('arrow')}</button></div>`:'';
   const hasFollowup=i.status!=='new'||Boolean(i.scheduled_at)||Boolean(i.inspector_id)||Boolean(i.reason)||Boolean(i.completion_note);
   const dangerZone=`<div class="inspection-danger-zone">${hasFollowup?`<button type="button" class="btn secondary full text-amber" data-action="reset-inspection" data-id="${h(i.id)}" title="Reverter para Nova e liberar preenchimento">${icon('undo')} Limpar acompanhamento</button>`:''}<button type="button" class="btn secondary full text-danger" data-action="delete-inspection" data-id="${h(i.id)}" data-protocol="${h(protocol||'esta vistoria')}">${icon('close')} Excluir vistoria</button></div>`;
-  $('#details').innerHTML=`<div class="detail-header"><div class="detail-kicker">${protocol?`<span>Protocolo · ${h(protocol)}</span>`:''}${inspectionBadge(i.status)}</div><button class="icon-btn close-modal" data-action="close-details" aria-label="Fechar vistoria">${icon('close')}</button><h2 id="detail-title">${h(inspectionKindNames[i.kind])}</h2><p>${icon('building')} ${propertyCode?`Código SAMI · ${h(propertyCode)} · `:''}${h(i.property.name)} · ${h(i.property.unit)}</p></div><div class="detail-content inspection-detail"><div class="inspection-detail-grid"><section><h3>Dados do pedido</h3><div class="metadata"><div><span>Solicitante</span><strong>${h(i.requester.name)}</strong></div><div><span>Registrado no sistema</span><strong>${h(stamp(i.created_at))}</strong></div><div><span>Prazo / Entrega</span><strong>${i.deadline_at?h(date(i.deadline_at)):'Não informado'}</strong></div><div><span>Vistoriador</span><strong>${h(i.inspector?.name||'Não atribuído')}</strong></div><div><span>Agendamento</span><strong>${i.scheduled_at?`${h(stamp(i.scheduled_at))}–${h(i.scheduled_end?.slice(11,16)||'?')}`:'Ainda não agendada'}</strong></div><div><span>Duração prevista</span><strong>${i.duration_minutes?`${i.duration_minutes} minutos`:i.scheduled_at?'A confirmar pelo vistoriador':'Não definida'}</strong></div><div><span>Confirmação</span><strong>${h(inspectionScheduleLabel(i))}</strong></div></div><div class="address-box">${icon('home')}<span>${h(i.address_snapshot)}</span></div>${linkedContractCard}${pending?`<div class="notice schedule-acceptance">${icon('clock')}<span>Este horário foi proposto para você. Aceite ou libere o horário para a equipe sugerir outro.</span><div class="record-actions"><button class="btn primary" data-action="accept-inspection">Aceitar horário</button><button class="btn secondary" data-action="decline-inspection">Não posso neste horário</button></div></div>`:''}${whatsapp}<h3 class="history-title">Histórico do pedido</h3><div class="timeline">${i.events.map(e=>`<div class="timeline-item"><span class="timeline-dot"></span><div><strong>${h(e.action)}</strong><p>${h(e.detail)}</p><small>${h(e.actor)} · ${h(stamp(e.created_at))}</small></div></div>`).join('')}</div></section><aside class="triage-box"><h3>Responsável e acompanhamento</h3><form data-form="inspection-update"><label>Situação<select name="status">${options(inspectionStatusNames,i.status)}</select></label><label>Prazo / Entrega<input type="date" name="deadline_at" value="${h(i.deadline_at||'')}"><small class="field-hint">Prazo de entrega das chaves / assinatura.</small></label><label>Vistoriador<select name="inspector_id"><option value="">Não atribuído</option>${inspectors.map(u=>`<option value="${h(u.id)}" ${i.inspector_id===u.id?'selected':''}>${h(u.name)}</option>`).join('')}</select></label><label>Data e horário<input type="datetime-local" name="scheduled_at" value="${h(i.scheduled_at)}"></label><label>Duração prevista (minutos)<input type="number" name="duration_minutes" min="15" max="480" step="15" value="${h(i.duration_minutes||'')}"></label><small class="field-hint">Expediente: 08:00–11:00 e 13:00–18:00. Duração definida pelo vistoriador. Horário novo aguarda aceite.</small><label>Motivo de cancelamento ou sem contrato<textarea name="reason" rows="3" maxlength="1500">${h(i.reason)}</textarea></label><label>Resultado da vistoria<textarea name="completion_note" rows="4" maxlength="4000">${h(i.completion_note)}</textarea></label><p class="form-error" role="alert"></p><button type="submit" class="btn primary full">Salvar acompanhamento</button></form>${dangerZone}</aside></div></div><div class="detail-foot">${icon('clock')} Registrado em ${h(stamp(i.created_at))} · Atualizado ${h(stamp(i.updated_at))}<span>Gestor Imob</span></div>`;
+  $('#details').innerHTML=`<div class="detail-header"><div class="detail-kicker">${protocol?`<span>Protocolo · ${h(protocol)}</span>`:''}${inspectionBadge(i.status)}</div><button class="icon-btn close-modal" data-action="close-details" aria-label="Fechar vistoria">${icon('close')}</button><h2 id="detail-title">${h(inspectionKindNames[i.kind])}</h2><p>${icon('building')} ${propertyCode?`Código SAMI · ${h(propertyCode)} · `:''}${h(i.property.name)} · ${h(i.property.unit)}</p></div><div class="detail-content inspection-detail"><div class="inspection-detail-grid"><section><h3>Dados do pedido</h3><div class="metadata"><div><span>Solicitante</span><strong>${h(i.requester.name)}</strong></div><div><span>Registrado no sistema</span><strong>${h(stamp(i.created_at))}</strong></div><div><span>Prazo / Entrega</span><strong>${i.deadline_at?h(date(i.deadline_at)):'Não informado'}</strong></div><div><span>Vistoriador</span><strong>${h(i.inspector?.name||'Não atribuído')}</strong></div><div><span>Agendamento</span><strong>${i.scheduled_at?`${h(stamp(i.scheduled_at))}–${h(i.scheduled_end?.slice(11,16)||'?')}`:'Ainda não agendada'}</strong></div><div><span>Duração prevista</span><strong>${i.duration_minutes?`${i.duration_minutes} minutos`:i.scheduled_at?'A confirmar pelo vistoriador':'Não definida'}</strong></div><div><span>Confirmação</span><strong>${h(inspectionScheduleLabel(i))}</strong></div></div><div class="address-box">${icon('home')}<span>${h(i.address_snapshot)}</span></div>${linkedContractCard}${quickDetailActions}${whatsapp}<h3 class="history-title">Histórico do pedido</h3><div class="timeline">${i.events.map(e=>`<div class="timeline-item"><span class="timeline-dot"></span><div><strong>${h(e.action)}</strong><p>${h(e.detail)}</p><small>${h(e.actor)} · ${h(stamp(e.created_at))}</small></div></div>`).join('')}</div></section><aside class="triage-box"><h3>Responsável e acompanhamento</h3><form data-form="inspection-update"><label>Situação<select name="status">${options(inspectionStatusNames,i.status)}</select></label><label>Prazo / Entrega<input type="date" name="deadline_at" value="${h(i.deadline_at||'')}"><small class="field-hint">Prazo de entrega das chaves / assinatura.</small></label><label>Vistoriador<select name="inspector_id"><option value="">Não atribuído</option>${inspectors.map(u=>`<option value="${h(u.id)}" ${i.inspector_id===u.id?'selected':''}>${h(u.name)}</option>`).join('')}</select></label><label>Data e horário<input type="datetime-local" name="scheduled_at" value="${h(i.scheduled_at)}"></label><label>Duração prevista (minutos)<input type="number" name="duration_minutes" min="15" max="480" step="15" value="${h(i.duration_minutes||'')}"></label><small class="field-hint">Expediente: 08:00–11:00 e 13:00–18:00. Duração definida pelo vistoriador. Horário novo aguarda aceite.</small><label>Motivo de cancelamento ou sem contrato<textarea name="reason" rows="3" maxlength="1500">${h(i.reason)}</textarea></label><label>Resultado da vistoria<textarea name="completion_note" rows="4" maxlength="4000">${h(i.completion_note)}</textarea></label><p class="form-error" role="alert"></p><button type="submit" class="btn primary full">Salvar acompanhamento</button></form>${dangerZone}</aside></div></div><div class="detail-foot">${icon('clock')} Registrado em ${h(stamp(i.created_at))} · Atualizado ${h(stamp(i.updated_at))}<span>Gestor Imob</span></div>`;
 }
 async function openTicket(id){try{detail=await api('/tickets/'+id);detailTab='summary';renderDetail();if(!$('#details').open)$('#details').showModal();}catch(e){toast(e.message,true);}}
 function renderDetail(){
@@ -431,6 +484,133 @@ document.addEventListener('click',async event=>{
       await load();await openContract(c.id);toast(action==='start'?'Confecção iniciada.':'Contrato enviado à gestora.');
     }
     if(a==='justify-contract-delay')contractDelayEditor();
+    if(a==='close-quick-assign'){
+      $('#quick-assign-modal').close();
+      return;
+    }
+    if(a==='confirm-quick-assign'){
+      const inspId = el.dataset.inspectionId;
+      const userId = el.dataset.userId;
+      const targetStatus = el.dataset.targetStatus || 'in_progress';
+      $('#quick-assign-modal').close();
+      const i = state.inspections.find(x => x.id === inspId);
+      if(!i) return;
+      const scheduledAt = i.scheduled_at || nextAvailableSlot();
+      const duration = i.duration_minutes || 60;
+      try{
+        await api(`/inspections/${i.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            revision: i.revision,
+            status: targetStatus,
+            inspector_id: userId,
+            scheduled_at: scheduledAt,
+            duration_minutes: duration,
+            reason: '',
+            completion_note: i.completion_note || ''
+          })
+        });
+        await load();
+        toast(targetStatus === 'in_progress' ? 'Vistoria atribuída e iniciada com sucesso!' : 'Vistoria atribuída e aceita!');
+        if($('#details').open) {
+          inspectionDetail = await api('/inspections/' + i.id);
+          renderInspectionDetail();
+        }
+      }catch(err){
+        toast(err.message, true);
+      }
+      return;
+    }
+    if(a==='quick-start-inspection'){
+      const i = state.inspections.find(x => x.id === el.dataset.id) || inspectionDetail;
+      if(!i) return;
+      let inspectorId = i.inspector_id;
+      if(!inspectorId){
+        if(String(state.user.job_title||'').toLowerCase()==='vistoriador'){
+          inspectorId = state.user.id;
+        } else {
+          const inspectors = state.users.filter(u=>['admin','staff'].includes(u.role)&&String(u.job_title||'').toLowerCase()==='vistoriador');
+          if(inspectors.length === 1){
+            inspectorId = inspectors[0].id;
+          } else {
+            quickAssignModal(i, 'in_progress');
+            return;
+          }
+        }
+      }
+      const scheduledAt = i.scheduled_at || nextAvailableSlot();
+      const duration = i.duration_minutes || 60;
+      try{
+        await api(`/inspections/${i.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            revision: i.revision,
+            status: 'in_progress',
+            inspector_id: inspectorId,
+            scheduled_at: scheduledAt,
+            duration_minutes: duration,
+            reason: '',
+            completion_note: i.completion_note || ''
+          })
+        });
+        await load();
+        toast('Vistoria iniciada e movida para Em andamento!');
+        if($('#details').open) {
+          inspectionDetail = await api('/inspections/' + i.id);
+          renderInspectionDetail();
+        }
+      }catch(err){
+        toast(err.message, true);
+      }
+      return;
+    }
+    if(a==='quick-accept-inspection'){
+      const i = state.inspections.find(x => x.id === el.dataset.id) || inspectionDetail;
+      if(!i) return;
+      let inspectorId = i.inspector_id;
+      if(!inspectorId){
+        if(String(state.user.job_title||'').toLowerCase()==='vistoriador'){
+          inspectorId = state.user.id;
+        } else {
+          const inspectors = state.users.filter(u=>['admin','staff'].includes(u.role)&&String(u.job_title||'').toLowerCase()==='vistoriador');
+          if(inspectors.length === 1){
+            inspectorId = inspectors[0].id;
+          } else {
+            quickAssignModal(i, 'received');
+            return;
+          }
+        }
+      }
+      const scheduledAt = i.scheduled_at || nextAvailableSlot();
+      const duration = i.duration_minutes || 60;
+      try{
+        await api(`/inspections/${i.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            revision: i.revision,
+            status: 'received',
+            inspector_id: inspectorId,
+            scheduled_at: scheduledAt,
+            duration_minutes: duration,
+            reason: '',
+            completion_note: i.completion_note || ''
+          })
+        });
+        await load();
+        toast('Vistoria aceita com sucesso!');
+        if($('#details').open) {
+          inspectionDetail = await api('/inspections/' + i.id);
+          renderInspectionDetail();
+        }
+      }catch(err){
+        toast(err.message, true);
+      }
+      return;
+    }
+    if(a==='quick-finish-inspection'){
+      await openInspection(el.dataset.id);
+      return;
+    }
     if(a==='accept-inspection'||a==='decline-inspection'){
       const i=inspectionDetail,accept=a==='accept-inspection';
       await api('/inspections/'+i.id,{method:'PATCH',body:JSON.stringify({revision:i.revision,status:accept?'received':'new',inspector_id:accept?i.inspector_id:'',scheduled_at:accept?i.scheduled_at:'',duration_minutes:accept?i.duration_minutes:0,reason:accept?'':'Horário recusado pelo vistoriador.',completion_note:i.completion_note})});

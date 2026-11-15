@@ -254,7 +254,7 @@ export function mapAppKindToSupabaseType(kind) {
 
 export function mapSupabaseStatusToApp(status) {
   if (status === 'canceled') return 'cancelled';
-  if (status === 'scheduled') return 'received';
+  if (status === 'awaiting_contract') return 'no_contract';
   if (['new', 'received', 'in_progress', 'no_contract', 'completed', 'finalized', 'cancelled'].includes(status)) {
     return status;
   }
@@ -264,9 +264,9 @@ export function mapSupabaseStatusToApp(status) {
 export function mapAppStatusToSupabaseStatus(status) {
   switch (status) {
     case 'cancelled': return 'canceled';
-    case 'received': return 'scheduled';
-    case 'in_progress': return 'scheduled';
-    case 'no_contract': return 'canceled';
+    case 'received': return 'received';
+    case 'in_progress': return 'in_progress';
+    case 'no_contract': return 'awaiting_contract';
     case 'completed': return 'completed';
     case 'finalized': return 'finalized';
     default: return 'new';
@@ -546,9 +546,10 @@ export async function syncInspectionToSupabase(inspection, property) {
       notes: inspection.completion_note || inspection.reason || null,
       updated_at: inspection.updated_at || new Date().toISOString()
     };
-    if (inspection.requester_id && inspection.requester_id.length > 20) {
-      payload.created_by = inspection.requester_id;
-    }
+    const DEFAULT_ADMIN_UUID = '8ed5dfe2-5867-4918-8d44-e317c1a3ee97'; // Leonardo
+    payload.created_by = (inspection.requester_id && inspection.requester_id.length > 20)
+      ? inspection.requester_id
+      : DEFAULT_ADMIN_UUID;
     if (inspection.inspector_id && inspection.inspector_id.length > 20) {
       payload.assigned_to = inspection.inspector_id;
     }
