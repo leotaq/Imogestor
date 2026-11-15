@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { passwordHash } from './database.js';
-import { syncUserToSupabase, syncPropertyToSupabase, syncInspectionToSupabase } from './supabase.js';
+import { syncUserToSupabase, syncPropertyToSupabase, syncInspectionToSupabase, deleteInspectionFromSupabase } from './supabase.js';
 
 export const STATUSES = ['new','triage','waiting','in_progress','resolved','closed','cancelled'];
 export const PRIORITIES = ['low','normal','high','urgent'];
@@ -255,7 +255,9 @@ export class Service {
         this.contractEvent(user,linkedContract.id,'Vistoria vinculada',`Vistoria de ocupação ${protocol} criada por ${requester.name} e vinculada.`,now);
       }
       if(scheduled)this.inspectionEvent(user,id,'Horário proposto',`${this.row('users',inspectorId,user.org_id).name} · ${appointment.start}–${appointment.end}. Aguardando aceite do vistoriador.`);
-      return this.inspectionDetail(user,id);
+      const created = this.inspectionDetail(user,id);
+      syncInspectionToSupabase(created, property).catch(err => console.error('[Supabase createInspection sync error]:', err.message));
+      return created;
     });
   }
   updateInspection(user,id,input) {
@@ -325,7 +327,10 @@ export class Service {
       if(nextStatus==='finalized'&&current.status!=='finalized'&&current.requester_id===user.id) {
         this.db.prepare("UPDATE inspection_notifications SET read_at=? WHERE org_id=? AND inspection_id=? AND recipient_id=? AND read_at=''").run(now,user.org_id,id,user.id);
       }
-      return this.inspectionDetail(user,id);
+      const updated = this.inspectionDetail(user,id);
+      const prop = this.db.prepare('SELECT * FROM properties WHERE id=? AND org_id=?').get(updated.property_id, user.org_id);
+      syncInspectionToSupabase(updated, prop).catch(err => console.error('[Supabase updateInspection sync error]:', err.message));
+      return updated;
     });
   }
   resetInspection(user,id) {
@@ -336,7 +341,10 @@ export class Service {
       this.db.prepare(`UPDATE inspections SET status='new',inspector_id=NULL,scheduled_at='',scheduled_end='',duration_minutes=0,reason='',completion_note='',updated_at=?,revision=revision+1
         WHERE id=? AND org_id=?`).run(now,id,user.org_id);
       this.inspectionEvent(user,id,'Acompanhamento limpo',`Edições de acompanhamento removidas por ${user.name}. Vistoria voltou ao estado Nova para novo preenchimento.`);
-      return this.inspectionDetail(user,id);
+      const reset = this.inspectionDetail(user,id);
+      const prop = this.db.prepare('SELECT * FROM properties WHERE id=? AND org_id=?').get(reset.property_id, user.org_id);
+      syncInspectionToSupabase(reset, prop).catch(err => console.error('[Supabase resetInspection sync error]:', err.message));
+      return reset;
     });
   }
   deleteInspection(user,id) {
@@ -347,6 +355,7 @@ export class Service {
       this.db.prepare('DELETE FROM inspection_notifications WHERE inspection_id=? AND org_id=?').run(id,user.org_id);
       this.db.prepare('DELETE FROM inspection_events WHERE inspection_id=? AND org_id=?').run(id,user.org_id);
       this.db.prepare('DELETE FROM inspections WHERE id=? AND org_id=?').run(id,user.org_id);
+      deleteInspectionFromSupabase(id).catch(err => console.error('[Supabase deleteInspection sync error]:', err.message));
       return {ok:true,id,protocol:current.protocol};
     });
   }
