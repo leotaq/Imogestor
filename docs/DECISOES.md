@@ -4,6 +4,7 @@
 
 | Data | Decisão | Fonte |
 |---|---|---|
+| 15/11/2026 | Agendamento estruturado com duração e bloqueio anti-conflito na agenda: cards do Kanban ampliados (colunas de 360px-450px, cards com padding 18px-20px e tipografia destacada); criado modal dedicado de agendamento (`#schedule-modal`) exigindo vistoriador, data da vistoria, horário de início e duração prevista (30 a 120 min), com bloqueio automático no período da agenda e detecção de sobreposição/conflito em tempo real; adicionadas ações nos cards de 'Nova' (Agendar / Iniciar), 'Aceita' (Iniciar e Reagendar) e 'Em andamento' (Concluir). | Instrução direta do usuário para evitar sobreposição de chamados no mesmo horário. |
 | 19/10/2026 | Pasta oficial: `E:\Novos projetos\Gestor_imob`. | Instrução direta nesta conversa. |
 | 19/10/2026 | Foco atual em manutenção/chamados; painel interno primeiro. | Pedido de pesquisa e especificação. |
 | 19/10/2026 | Portal futuro sem login: titular, endereço completo, contato, tipo, descrição e fotos. | Pedido de pesquisa e especificação. |

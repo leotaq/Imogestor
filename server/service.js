@@ -73,7 +73,7 @@ export class Service {
   validateAppointment(user,inspectorId,startValue,durationValue,excludeId='') {
     const inspector=this.row('users',inspectorId,user.org_id);
     if(inspector.active!==1||!['admin','staff'].includes(inspector.role)) throw new AppError('Selecione alguém ativo da equipe como vistoriador.');
-    if(String(inspector.job_title||'').trim().toLowerCase()!=='vistoriador') throw new AppError('Defina o cargo Vistoriador no painel Equipe antes de atribuir a agenda.');
+    if(!String(inspector.job_title||'').trim().toLowerCase().includes('vistoriador') && inspector.role !== 'admin') throw new AppError('Defina o cargo Vistoriador no painel Equipe antes de atribuir a agenda.');
     const start=dateTime(startValue),duration=Number(durationValue);
     if(!Number.isInteger(duration)||duration<15||duration>480||duration%15) throw new AppError('Informe a duração em blocos de 15 minutos, entre 15 e 480.');
     const end=appointmentEnd(start,duration),from=timeMinutes(start),to=timeMinutes(end);
@@ -292,14 +292,18 @@ export class Service {
     }
     const deadline=input.deadline_at!==undefined?(input.deadline_at?input.deadline_at.slice(0,10):''):current.deadline_at;
     const appointmentChanged=inspectorId!==current.inspector_id||scheduled!==current.scheduled_at||duration!==current.duration_minutes;
-    if(current.status==='received'&&appointmentChanged&&user.role!=='admin') throw new AppError('Somente a Gestão pode alterar um horário aceito.');
+    if(current.status==='received'&&appointmentChanged&&user.role!=='admin'&&user.id!==current.inspector_id) throw new AppError('Somente a Gestão ou o vistoriador pode alterar um horário aceito.');
     if(appointmentChanged&&['in_progress','no_contract','completed','finalized','cancelled'].includes(current.status)) throw new AppError('O horário fica bloqueado depois que a vistoria começa ou é encerrada.');
     let nextStatus=status;
     if(current.status==='new'&&status==='received') {
       if(!scheduled) throw new AppError('A vistoria precisa ter horário proposto antes do aceite.');
       if(user.id!==inspectorId && user.role!=='admin') throw new AppError('Somente o vistoriador designado ou a Gestão pode aceitar este horário.',403);
     }
-    if(current.status==='received'&&appointmentChanged) nextStatus='new';
+    if(current.status==='new'&&status==='in_progress') {
+      if(!scheduled) throw new AppError('A vistoria precisa ter agendamento antes de ser iniciada.');
+      if(user.id!==inspectorId && user.role!=='admin') throw new AppError('Somente o vistoriador designado ou a Gestão pode iniciar este atendimento.',403);
+    }
+    if(current.status==='received'&&appointmentChanged&&status==='new') nextStatus='new';
     if(!transitions[current.status].includes(nextStatus)) throw new AppError('Transição inválida para esta vistoria.');
     const reason=text(input.reason||'','Motivo',1500,false),completion=text(input.completion_note||'','Registro da vistoria',4000,false);
     if(['no_contract','cancelled'].includes(nextStatus)&&!reason) throw new AppError('Registre o motivo antes de continuar.');

@@ -95,6 +95,11 @@ function inspectionBadge(status){return `<span class="badge inspection-${h(statu
 function inspectionDisplayProtocol(protocol){return /^HIST-\d{4}$/i.test(protocol||'')?'':String(protocol||'');}
 function inspectionDisplayPropertyCode(i){const code=String(i.property_code_snapshot||i.property_code||i.property?.code||'');return /^HIST-\d{4}$/i.test(i.protocol||'')&&/^HIST-(?:[0-9A-F]{16}|[0-9A-F]{14}-\d+)$/i.test(code)?'':code;}
 function inspectionScheduleLabel(i){return i.status==='new'&&i.scheduled_at?'Aguardando aceite':i.status==='received'?'Aceita pelo vistoriador':inspectionStatusNames[i.status];}
+function calcAppointmentEnd(start, durationMinutes) {
+  if (!start || !durationMinutes) return '';
+  const d = new Date(Date.parse(start.includes('T') ? (start.length === 16 ? start + ':00Z' : start) : start + 'T00:00:00Z') + Number(durationMinutes) * 60000);
+  return d.toISOString().slice(0, 16);
+}
 function inspectionTimeRange(i){return i.scheduled_at?`${i.scheduled_at.slice(11,16)}–${i.scheduled_end?.slice(11,16)||'?'}`:'';}
 function suggestedInspectionDuration(propertyId,kind){
   const rows=state.inspections.filter(i=>i.kind===kind&&i.duration_minutes>0&&!['cancelled','no_contract'].includes(i.status));
@@ -145,16 +150,254 @@ function quickAssignModal(i, targetStatus){
   if (!d.open) d.showModal();
 }
 
+
+function openScheduleModal(inspectionId) {
+  const i = state.inspections.find(x => x.id === inspectionId) || inspectionDetail;
+  if (!i) return;
+
+  const staff = state.users.filter(u => ['admin', 'staff'].includes(u.role) && u.active === 1);
+  const inspectors = staff.filter(u => String(u.job_title || '').toLowerCase().includes('vistoriador') || u.role === 'admin');
+  const list = inspectors.length ? inspectors : staff;
+
+  let currentInspectorId = i.inspector_id;
+  if (!currentInspectorId) {
+    if (String(state.user.job_title || '').toLowerCase().includes('vistoriador')) {
+      currentInspectorId = state.user.id;
+    } else {
+      const defaultInsp = list.find(u => String(u.job_title || '').toLowerCase().includes('vistoriador')) || list[0];
+      currentInspectorId = defaultInsp ? defaultInsp.id : state.user.id;
+    }
+  }
+
+  const currentDate = i.scheduled_at ? i.scheduled_at.slice(0, 10) : today();
+  const currentDuration = i.duration_minutes || 60;
+  let currentTime = i.scheduled_at ? i.scheduled_at.slice(11, 16) : '09:00';
+
+  const d = $('#schedule-modal');
+  d.innerHTML = `
+    <div class="schedule-modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="badge inspection-${h(i.status)}">Situação: ${h(inspectionStatusNames[i.status] || i.status)}</span>
+          <h2 id="schedule-modal-title">Agendar Vistoria</h2>
+          <p class="modal-subtitle">Imóvel: <strong>${h(inspectionDisplayPropertyCode(i) || i.property_name || 'Imóvel')}</strong> · ${h(i.address_snapshot || 'Endereço não informado')}</p>
+        </div>
+        <button type="button" class="close-modal-btn" data-action="close-schedule-modal" aria-label="Fechar">✕</button>
+      </div>
+
+      <div id="sched-error-banner" class="alert-banner error" style="display:none;margin-bottom:8px;padding:10px 14px;border-radius:8px;background:#fde8e8;color:#9b1c1c;border:1px solid #f8b4b4;font-size:12.5px;line-height:1.4;"></div>
+
+      <form id="schedule-modal-form" onsubmit="return false;">
+        <input type="hidden" name="inspection_id" value="${h(i.id)}" />
+        <div class="schedule-form-grid">
+          <label class="form-field full">
+            <span>Vistoriador responsável *</span>
+            <select id="sched-inspector" name="inspector_id" required>
+              ${list.map(u => `
+                <option value="${h(u.id)}" ${u.id === currentInspectorId ? 'selected' : ''}>
+                  ${h(u.name)}${u.job_title ? ` (${h(u.job_title)})` : ''}
+                </option>
+              `).join('')}
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span>Data da vistoria *</span>
+            <input type="date" id="sched-date" name="scheduled_date" value="${h(currentDate)}" min="${h(today())}" required />
+          </label>
+
+          <label class="form-field">
+            <span>Duração prevista *</span>
+            <select id="sched-duration" name="duration_minutes" required>
+              <option value="30" ${currentDuration === 30 ? 'selected' : ''}>30 minutos</option>
+              <option value="45" ${currentDuration === 45 ? 'selected' : ''}>45 minutos</option>
+              <option value="60" ${currentDuration === 60 ? 'selected' : ''}>60 minutos (1 hora)</option>
+              <option value="75" ${currentDuration === 75 ? 'selected' : ''}>75 minutos (1h 15m)</option>
+              <option value="90" ${currentDuration === 90 ? 'selected' : ''}>90 minutos (1h 30m)</option>
+              <option value="120" ${currentDuration === 120 ? 'selected' : ''}>120 minutos (2 horas)</option>
+            </select>
+          </label>
+
+          <label class="form-field full">
+            <span>Horário de início (Expediente: 08:00–11:00 e 13:00–18:00) *</span>
+            <select id="sched-time" name="scheduled_time" required>
+            </select>
+          </label>
+        </div>
+
+        <div id="sched-summary-container" style="margin-top:14px;">
+        </div>
+
+        <div class="schedule-modal-actions">
+          <button type="button" class="btn secondary" data-action="close-schedule-modal">Cancelar</button>
+          <button type="button" class="btn outline-green" id="btn-sched-accept">${icon('check')} Confirmar Agendamento (Aceita)</button>
+          <button type="button" class="btn primary" id="btn-sched-start">${icon('arrow')} Agendar e Iniciar Agora</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  function populateTimeSlots() {
+    const dur = Number($('#sched-duration').value) || 60;
+    const timeSelect = $('#sched-time');
+    const prevVal = timeSelect.value || currentTime;
+
+    const slots = [];
+    // Manhã (08:00 às 11:00) -> 480 a 660 min
+    for (let m = 480; m + dur <= 660; m += 15) {
+      const hh = String(Math.floor(m / 60)).padStart(2, '0');
+      const mm = String(m % 60).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+    }
+    // Tarde (13:00 às 18:00) -> 780 a 1080 min
+    for (let m = 780; m + dur <= 1080; m += 15) {
+      const hh = String(Math.floor(m / 60)).padStart(2, '0');
+      const mm = String(m % 60).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+    }
+
+    timeSelect.innerHTML = slots.map(t => {
+      const endM = (Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5))) + dur;
+      const endHh = String(Math.floor(endM / 60)).padStart(2, '0');
+      const endMm = String(endM % 60).padStart(2, '0');
+      return `<option value="${t}">${t} às ${endHh}:${endMm}</option>`;
+    }).join('');
+
+    if (slots.includes(prevVal)) {
+      timeSelect.value = prevVal;
+    } else if (slots.length > 0) {
+      timeSelect.value = slots[0];
+    }
+  }
+
+  function updateSchedulePreview() {
+    const inspectorId = $('#sched-inspector').value;
+    const dateVal = $('#sched-date').value;
+    const timeVal = $('#sched-time').value;
+    const durVal = Number($('#sched-duration').value) || 60;
+
+    if (!inspectorId || !dateVal || !timeVal) return;
+
+    const inspector = state.users.find(u => u.id === inspectorId);
+    const inspectorName = inspector ? inspector.name : 'Vistoriador';
+
+    const startIso = `${dateVal}T${timeVal}`;
+    const endIso = calcAppointmentEnd(startIso, durVal);
+    const endTime = endIso.slice(11, 16);
+
+    const conflict = state.inspections.find(other => {
+      if (other.id === i.id) return false;
+      if (other.inspector_id !== inspectorId) return false;
+      if (!['new', 'received', 'in_progress'].includes(other.status)) return false;
+      if (!other.scheduled_at) return false;
+      const otherStart = other.scheduled_at.slice(0, 16);
+      const otherEnd = other.scheduled_end ? other.scheduled_end.slice(0, 16) : calcAppointmentEnd(otherStart, other.duration_minutes || 60);
+      return otherStart < endIso && otherEnd > startIso;
+    });
+
+    const summaryBox = $('#sched-summary-container');
+    if (conflict) {
+      const cStart = conflict.scheduled_at.slice(11, 16);
+      const cEnd = conflict.scheduled_end ? conflict.scheduled_end.slice(11, 16) : '?';
+      summaryBox.innerHTML = `
+        <div class="schedule-conflict-warning">
+          <span style="font-size:18px;">⚠️</span>
+          <div>
+            <strong>Conflito de agenda detectado!</strong>
+            <span>${h(inspectorName)} já possui a vistoria <strong>${h(conflict.property_code || conflict.property_name || 'agendada')}</strong> das <strong>${cStart} às ${cEnd}</strong> nesta mesma data. Escolha outro horário para evitar sobreposição.</span>
+          </div>
+        </div>
+      `;
+    } else {
+      summaryBox.innerHTML = `
+        <div class="schedule-summary-box">
+          <div class="schedule-summary-icon">🔒</div>
+          <div class="schedule-summary-text">
+            <strong>Horário reservado exclusivamente na agenda</strong>
+            <p>${date(dateVal)} · das <strong>${timeVal} às ${endTime}</strong> (${durVal} min) · Vistoriador: <strong>${h(inspectorName)}</strong>.<br>Este período ficará bloqueado na agenda para impedir conflitos.</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  populateTimeSlots();
+  updateSchedulePreview();
+
+  $('#sched-duration').onchange = () => {
+    populateTimeSlots();
+    updateSchedulePreview();
+  };
+  $('#sched-inspector').onchange = updateSchedulePreview;
+  $('#sched-date').onchange = updateSchedulePreview;
+  $('#sched-time').onchange = updateSchedulePreview;
+
+  async function submitSchedule(targetStatus) {
+    const errBanner = $('#sched-error-banner');
+    errBanner.style.display = 'none';
+    errBanner.textContent = '';
+
+    const inspectorId = $('#sched-inspector').value;
+    const dateVal = $('#sched-date').value;
+    const timeVal = $('#sched-time').value;
+    const durVal = Number($('#sched-duration').value) || 60;
+
+    if (!inspectorId || !dateVal || !timeVal) {
+      errBanner.textContent = 'Preencha o vistoriador, a data e o horário.';
+      errBanner.style.display = 'block';
+      return;
+    }
+
+    const scheduledAt = `${dateVal}T${timeVal}`;
+    const btnAccept = $('#btn-sched-accept');
+    const btnStart = $('#btn-sched-start');
+    btnAccept.disabled = true;
+    btnStart.disabled = true;
+
+    try {
+      await api(`/inspections/${i.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          revision: i.revision,
+          status: targetStatus,
+          inspector_id: inspectorId,
+          scheduled_at: scheduledAt,
+          duration_minutes: durVal,
+          reason: '',
+          completion_note: i.completion_note || ''
+        })
+      });
+      d.close();
+      await load();
+      toast(targetStatus === 'in_progress' ? 'Vistoria agendada e iniciada com sucesso!' : 'Agendamento confirmado! Horário reservado na agenda.');
+      if ($('#details').open) {
+        inspectionDetail = await api('/inspections/' + i.id);
+        renderInspectionDetail();
+      }
+    } catch (err) {
+      btnAccept.disabled = false;
+      btnStart.disabled = false;
+      errBanner.textContent = err.message;
+      errBanner.style.display = 'block';
+    }
+  }
+
+  $('#btn-sched-accept').onclick = () => submitSchedule('received');
+  $('#btn-sched-start').onclick = () => submitSchedule('in_progress');
+
+  if (!d.open) d.showModal();
+}
+
 function inspectionCard(i){
   const protocol=inspectionDisplayProtocol(i.protocol),propertyCode=inspectionDisplayPropertyCode(i),address=String(i.address_snapshot||'').trim();
   const propertyName=String(i.property_name||'').trim(),showAddress=address&&fold(address)!==fold(propertyName);
   let actionsHtml = '';
   if (i.status === 'new') {
-    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}" title="Aceitar e iniciar atendimento imediatamente">${icon('arrow')} Iniciar vistoria</button><button type="button" class="card-action-btn secondary" data-action="quick-accept-inspection" data-id="${h(i.id)}" title="Aceitar agendamento">${icon('check')} Aceitar</button></div>`;
+    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary full-width" data-action="open-schedule-modal" data-id="${h(i.id)}" title="Agendar vistoriador, data e duração">${icon('calendar')} Agendar / Iniciar vistoria</button></div>`;
   } else if (i.status === 'received') {
-    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}" title="Iniciar vistoria em campo">${icon('arrow')} Iniciar vistoria</button></div>`;
+    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary" data-action="quick-start-inspection" data-id="${h(i.id)}" title="Iniciar vistoria em campo">${icon('arrow')} Iniciar vistoria</button><button type="button" class="card-action-btn secondary" data-action="open-schedule-modal" data-id="${h(i.id)}" title="Alterar data, horário ou duração na agenda">${icon('calendar')} Reagendar</button></div>`;
   } else if (i.status === 'in_progress') {
-    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn secondary" data-action="quick-finish-inspection" data-id="${h(i.id)}" title="Registrar conclusão e laudo">${icon('check')} Concluir</button></div>`;
+    actionsHtml = `<div class="inspection-card-actions"><button type="button" class="card-action-btn primary full-width finish" data-action="quick-finish-inspection" data-id="${h(i.id)}" title="Registrar conclusão e laudo">${icon('check')} Concluir vistoria</button></div>`;
   }
   return `<article class="inspection-card" data-inspection="${h(i.id)}"><span class="inspection-card-top"><span class="inspection-card-tags"><span class="inspection-kind-tag inspection-kind-${h(i.kind)}"><small>Tipo de vistoria</small><strong>${h(inspectionKindNames[i.kind]||i.kind)}</strong></span>${protocol?`<span class="inspection-protocol"><small>Protocolo</small><strong>${h(protocol)}</strong></span>`:''}</span><span class="badge inspection-${h(i.status)}">Situação · ${h(inspectionStatusNames[i.status]||i.status)}</span></span><span class="inspection-card-property"><small>Imóvel / unidade</small><strong>${h(propertyName||'Não identificado')}</strong></span>${propertyCode?`<span class="inspection-card-code"><small>Código do imóvel</small><strong>${h(propertyCode)}</strong></span>`:''}${showAddress?`<span class="inspection-card-address"><small>Endereço</small><strong>${h(address)}</strong></span>`:''}<span class="inspection-card-fields"><span><small>Prazo</small><strong>${i.deadline_at?h(date(i.deadline_at)):'Não informado'}</strong></span><span><small>Vistoriador</small><strong>${h(i.inspector_name||'Não atribuído')}</strong></span><span><small>Agendamento</small><strong>${i.scheduled_at?`${h(date(i.scheduled_at))} · ${h(inspectionTimeRange(i))}`:i.status==='new'?'Aguardando agendamento':'Não agendado'}</strong></span></span>${i.status==='new'&&i.scheduled_at?'<span class="schedule-pending">Aceite do horário · aguardando vistoriador</span>':''}<span class="inspection-card-requester"><small>Solicitante</small><strong>${h(i.requester_name||'Não informado')}</strong></span>${actionsHtml}</article>`;
 }
@@ -521,34 +764,30 @@ document.addEventListener('click',async event=>{
       }
       return;
     }
+    if(a==='open-schedule-modal'){
+      openScheduleModal(el.dataset.id);
+      return;
+    }
+    if(a==='close-schedule-modal'){
+      $('#schedule-modal').close();
+      return;
+    }
     if(a==='quick-start-inspection'){
       const i = state.inspections.find(x => x.id === el.dataset.id) || inspectionDetail;
       if(!i) return;
-      let inspectorId = i.inspector_id;
-      if(!inspectorId){
-        if(String(state.user.job_title||'').toLowerCase()==='vistoriador'){
-          inspectorId = state.user.id;
-        } else {
-          const inspectors = state.users.filter(u=>['admin','staff'].includes(u.role)&&String(u.job_title||'').toLowerCase()==='vistoriador');
-          if(inspectors.length === 1){
-            inspectorId = inspectors[0].id;
-          } else {
-            quickAssignModal(i, 'in_progress');
-            return;
-          }
-        }
+      if(!i.scheduled_at || !i.inspector_id){
+        openScheduleModal(i.id);
+        return;
       }
-      const scheduledAt = i.scheduled_at || nextAvailableSlot();
-      const duration = i.duration_minutes || 60;
       try{
         await api(`/inspections/${i.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             revision: i.revision,
             status: 'in_progress',
-            inspector_id: inspectorId,
-            scheduled_at: scheduledAt,
-            duration_minutes: duration,
+            inspector_id: i.inspector_id,
+            scheduled_at: i.scheduled_at,
+            duration_minutes: i.duration_minutes || 60,
             reason: '',
             completion_note: i.completion_note || ''
           })
@@ -565,46 +804,7 @@ document.addEventListener('click',async event=>{
       return;
     }
     if(a==='quick-accept-inspection'){
-      const i = state.inspections.find(x => x.id === el.dataset.id) || inspectionDetail;
-      if(!i) return;
-      let inspectorId = i.inspector_id;
-      if(!inspectorId){
-        if(String(state.user.job_title||'').toLowerCase()==='vistoriador'){
-          inspectorId = state.user.id;
-        } else {
-          const inspectors = state.users.filter(u=>['admin','staff'].includes(u.role)&&String(u.job_title||'').toLowerCase()==='vistoriador');
-          if(inspectors.length === 1){
-            inspectorId = inspectors[0].id;
-          } else {
-            quickAssignModal(i, 'received');
-            return;
-          }
-        }
-      }
-      const scheduledAt = i.scheduled_at || nextAvailableSlot();
-      const duration = i.duration_minutes || 60;
-      try{
-        await api(`/inspections/${i.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            revision: i.revision,
-            status: 'received',
-            inspector_id: inspectorId,
-            scheduled_at: scheduledAt,
-            duration_minutes: duration,
-            reason: '',
-            completion_note: i.completion_note || ''
-          })
-        });
-        await load();
-        toast('Vistoria aceita com sucesso!');
-        if($('#details').open) {
-          inspectionDetail = await api('/inspections/' + i.id);
-          renderInspectionDetail();
-        }
-      }catch(err){
-        toast(err.message, true);
-      }
+      openScheduleModal(el.dataset.id);
       return;
     }
     if(a==='quick-finish-inspection'){
